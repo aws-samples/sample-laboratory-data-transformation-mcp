@@ -41,6 +41,7 @@ ENV/
 .coverage.*
 htmlcov/
 .pytest_cache/
+.hypothesis
 
 # Ruff
 .ruff_cache/

@@ -1,0 +1,353 @@
+{
+  "$asm.manifest": "http://purl.allotrope.org/manifests/plate-reader/REC/2025/12/plate-reader.manifest",
+  "plate reader aggregate document": {
+    "device system document": {
+      "brand name": "Weyland-Yutani",
+      "model number": "470",
+      "device identifier": "1384",
+      "product manufacturer": "Weyland-Yutani"
+    },
+    "data system document": {
+      "ASM file identifier": "ed63d9a0-f0a0-4214-811d-01f0cc8775e2",
+      "data system instance identifier": "weyland-yutani-converter",
+      "UNC path": "",
+      "file name": "instrument_data.csv",
+      "ASM converter name": "Weyland-Yutani Plate Reader Converter",
+      "ASM converter version": "1.0.0"
+    },
+    "plate reader document": [
+      {
+        "measurement aggregate document": {
+          "measurement time": "2023-10-26T11:15:40+00:00",
+          "container type": "well plate",
+          "plate well count": {
+            "value": 16,
+            "unit": "#"
+          },
+          "measurement document": [
+            {
+              "measurement identifier": "1",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "A1",
+                "location identifier": "A1",
+                "well location identifier": "A1"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 3.61,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "2",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "B1",
+                "location identifier": "B1",
+                "well location identifier": "B1"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 1.45,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "3",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "C1",
+                "location identifier": "C1",
+                "well location identifier": "C1"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 2.23,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "4",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "D1",
+                "location identifier": "D1",
+                "well location identifier": "D1"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 3.08,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "5",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "A2",
+                "location identifier": "A2",
+                "well location identifier": "A2"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 4.1,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "6",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "B2",
+                "location identifier": "B2",
+                "well location identifier": "B2"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 4.58,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "7",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "C2",
+                "location identifier": "C2",
+                "well location identifier": "C2"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 3.6,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "8",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "D2",
+                "location identifier": "D2",
+                "well location identifier": "D2"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 1.67,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "9",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "A3",
+                "location identifier": "A3",
+                "well location identifier": "A3"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 3.27,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "10",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "B3",
+                "location identifier": "B3",
+                "well location identifier": "B3"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 1.4,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "11",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "C3",
+                "location identifier": "C3",
+                "well location identifier": "C3"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 4.99,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "12",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "D3",
+                "location identifier": "D3",
+                "well location identifier": "D3"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 2.47,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "13",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "A4",
+                "location identifier": "A4",
+                "well location identifier": "A4"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 2.78,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "14",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "B4",
+                "location identifier": "B4",
+                "well location identifier": "B4"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 0.72,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "15",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "C4",
+                "location identifier": "C4",
+                "well location identifier": "C4"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 4.0,
+                "unit": "mAU"
+              }
+            },
+            {
+              "measurement identifier": "16",
+              "measurement time": "2023-10-26T11:15:40+00:00",
+              "sample document": {
+                "sample identifier": "D4",
+                "location identifier": "D4",
+                "well location identifier": "D4"
+              },
+              "device control aggregate document": {
+                "device control document": [
+                  {
+                    "device type": "plate reader"
+                  }
+                ]
+              },
+              "absorbance": {
+                "value": 0.49,
+                "unit": "mAU"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

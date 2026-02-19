@@ -14,86 +14,122 @@
 
 """awslabs allotrope MCP Server implementation."""
 
+import json
+from dataclasses import asdict, dataclass, field
+from jsonschema import Draft202012Validator
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
-from typing import Literal
 
 
 mcp = FastMCP(
-    "awslabs.allotrope-mcp-server",
-    instructions='This MCP server provides tools to convert instrument data files into standardized Allotrope Simple Model (ASM) format.',
+    'awslabs.allotrope-mcp-server',
+    instructions=(
+        'This MCP server provides tools to convert instrument data files into'
+        ' standardized Allotrope Simple Model (ASM) format.'
+    ),
     dependencies=[
-        'pydantic',
+        'jsonschema',
         'loguru',
+        'pydantic',
     ],
 )
 
 
-@mcp.tool(name='ExampleTool')
-async def example_tool(
-    query: str,
-) -> str:
-    """Example tool implementation.
+@dataclass
+class ValidationError:
+    """A single validation error from JSON Schema validation."""
 
-    Replace this with your own tool implementation.
+    path: str
+    message: str
+    validator: str
+
+
+@dataclass
+class ValidationResult:
+    """Result of validating an ASM document against a schema."""
+
+    is_valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+    error_message: str | None = None
+
+
+def validate_asm_document(document_path: str, schema_path: str) -> ValidationResult:
+    """Validate an ASM JSON document against a JSON Schema.
+
+    Reads both files, validates using Draft 2020-12, and returns a
+    structured result. Never raises exceptions.
     """
-    project_name = 'awslabs allotrope MCP Server'
-    return (
-        f"Hello from {project_name}! Your query was {query}. Replace this with your tool's logic"
-    )
+    # Read document
+    try:
+        with open(document_path) as f:
+            document_text = f.read()
+    except FileNotFoundError:
+        return ValidationResult(
+            is_valid=False,
+            error_message=f'Document file not found: {document_path}',
+        )
+
+    try:
+        document = json.loads(document_text)
+    except json.JSONDecodeError:
+        return ValidationResult(
+            is_valid=False,
+            error_message=f'Document file contains malformed JSON: {document_path}',
+        )
+
+    # Read schema
+    try:
+        with open(schema_path) as f:
+            schema_text = f.read()
+    except FileNotFoundError:
+        return ValidationResult(
+            is_valid=False,
+            error_message=f'Schema file not found: {schema_path}',
+        )
+
+    try:
+        schema = json.loads(schema_text)
+    except json.JSONDecodeError:
+        return ValidationResult(
+            is_valid=False,
+            error_message=f'Schema file contains malformed JSON: {schema_path}',
+        )
+
+    # Validate
+    validator = Draft202012Validator(schema)
+    errors = [
+        ValidationError(
+            path='.'.join(str(p) for p in err.absolute_path) or '(root)',
+            message=err.message,
+            validator=err.validator,
+        )
+        for err in sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
+    ]
+
+    return ValidationResult(is_valid=len(errors) == 0, errors=errors)
 
 
-@mcp.tool(name='MathTool')
-async def math_tool(
-    operation: Literal['add', 'subtract', 'multiply', 'divide'],
-    a: int | float,
-    b: int | float,
-) -> int | float:
-    """Math tool implementation.
+@mcp.tool()
+def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
+    """Validate an ASM JSON document against an Allotrope JSON Schema.
 
-    This tool supports the following operations:
-    - add
-    - subtract
-    - multiply
-    - divide
-
-    Parameters:
-        operation (Literal["add", "subtract", "multiply", "divide"]): The operation to perform.
-        a (int): The first number.
-        b (int): The second number.
+    Args:
+        asm_document_path: File path to the ASM JSON document.
+        asm_schema_path: File path to the ASM JSON Schema.
 
     Returns:
-        The result of the operation.
+        JSON string with validation result.
     """
-    match operation:
-        case 'add':
-            return a + b
-        case 'subtract':
-            return a - b
-        case 'multiply':
-            return a * b
-        case 'divide':
-            try:
-                return a / b
-            except ZeroDivisionError:
-                raise ValueError(f'The denominator {b} cannot be zero.')
-        case _:
-            raise ValueError(
-                f'Invalid operation: {operation} (must be one of: add, subtract, multiply, divide)'
-            )
+    result = validate_asm_document(asm_document_path, asm_schema_path)
+    d = asdict(result)
+    if d['error_message'] is None:
+        del d['error_message']
+    return json.dumps(d)
 
 
 def main():
     """Run the MCP server with CLI argument support."""
-
-    logger.trace('A trace message.')
-    logger.debug('A debug message.')
-    logger.info('An info message.')
-    logger.success('A success message.')
-    logger.warning('A warning message.')
-    logger.error('An error message.')
-    logger.critical('A critical message.')
-
+    logger.info('Starting allotrope MCP server')
     mcp.run()
 
 

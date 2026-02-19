@@ -8,6 +8,7 @@ description = "An AWS Labs Model Context Protocol (MCP) server for allotrope"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "jsonschema>=4.23.0",
     "loguru>=0.7.0",
     "mcp[cli]>=1.6.0",
     "pydantic>=2.10.6",
@@ -43,6 +44,7 @@ changelog = "https://github.com/awslabs/mcp/blob/main/src/allotrope-mcp-server/C
 [dependency-groups]
 dev = [
     "commitizen>=4.2.2",
+    "hypothesis>=6.100.0",
     "pre-commit>=4.1.0",
     "ruff>=0.9.7",
     "pyright>=1.1.398",
