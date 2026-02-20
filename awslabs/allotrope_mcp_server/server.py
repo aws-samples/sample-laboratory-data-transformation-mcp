@@ -15,6 +15,9 @@
 """awslabs allotrope MCP Server implementation."""
 
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
 from dataclasses import asdict, dataclass, field
 from jsonschema import Draft202012Validator
 from loguru import logger
@@ -33,6 +36,66 @@ mcp = FastMCP(
         'pydantic',
     ],
 )
+
+_GITLAB_TREE_URL = 'https://gitlab.com/api/v4/projects/42714196/repository/tree'
+_GITLAB_REF = 'main'
+_GITLAB_PATH = 'json-schemas/adm'
+_GITLAB_TIMEOUT_SECONDS = 30
+
+
+def _fetch_asm_techniques() -> list[str]:
+    """Fetch ASM technique names from the GitLab repository tree API.
+
+    Queries the Allotrope GitLab repository for subdirectories under
+    ``json-schemas/adm/``, following pagination until all pages are consumed.
+
+    Returns:
+        Sorted list of technique directory names.
+
+    Raises:
+        urllib.error.HTTPError: If the API returns a non-2xx status.
+        urllib.error.URLError: If a network/connection error occurs.
+        TimeoutError: If an individual request exceeds the timeout.
+        json.JSONDecodeError: If the response body is not valid JSON.
+    """
+    logger.info('Fetching ASM techniques from GitLab repository')
+    techniques: list[str] = []
+    page = 1
+
+    try:
+        while True:
+            params = urllib.parse.urlencode({
+                'ref': _GITLAB_REF,
+                'path': _GITLAB_PATH,
+                'page': page,
+            })
+            url = f'{_GITLAB_TREE_URL}?{params}'
+            req = urllib.request.Request(url, method='GET')
+
+            try:
+                with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
+                    body = resp.read().decode('utf-8')
+                    entries = json.loads(body)
+                    techniques.extend(
+                        entry['name'] for entry in entries if entry.get('type') == 'tree'
+                    )
+                    next_page = resp.headers.get('x-next-page', '').strip()
+                    if not next_page:
+                        break
+                    page = int(next_page)
+            except TimeoutError:
+                raise
+            except urllib.error.HTTPError:
+                raise
+            except urllib.error.URLError:
+                raise
+
+        logger.info(f'Fetched {len(techniques)} ASM techniques')
+    except Exception:
+        logger.error('Failed to fetch ASM techniques from GitLab')
+        raise
+
+    return techniques
 
 
 @dataclass
@@ -107,6 +170,33 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     ]
 
     return ValidationResult(is_valid=len(errors) == 0, errors=errors)
+
+@mcp.tool()
+async def list_asm_techniques() -> str:
+    """List all available Allotrope Simple Model (ASM) techniques.
+
+    Retrieves technique names from the official Allotrope GitLab repository
+    by querying the repository tree API for subdirectories under
+    ``json-schemas/adm/``.
+
+    Returns:
+        JSON string with a ``techniques`` key containing a list of technique
+        names, or an ``error`` key with a description on failure.
+    """
+    try:
+        techniques = _fetch_asm_techniques()
+        return json.dumps({'techniques': techniques})
+    except urllib.error.HTTPError as exc:
+        return json.dumps({'error': f'GitLab API returned HTTP {exc.code}: {exc.reason}'})
+    except urllib.error.URLError as exc:
+        return json.dumps({'error': f'Failed to connect to GitLab API: {exc.reason}'})
+    except TimeoutError:
+        return json.dumps({'error': 'GitLab API request timed out'})
+    except json.JSONDecodeError:
+        return json.dumps({'error': 'GitLab API returned invalid JSON'})
+    except Exception as exc:
+        return json.dumps({'error': f'Unexpected error: {exc}'})
+
 
 
 @mcp.tool()

@@ -17,7 +17,11 @@
 import json
 import os
 import tempfile
-from awslabs.allotrope_mcp_server.server import mcp, validate_asm, validate_asm_document
+from awslabs.allotrope_mcp_server.server import (
+    mcp,
+    validate_asm,
+    validate_asm_document,
+)
 from mcp.server.fastmcp import FastMCP
 
 
@@ -131,3 +135,10 @@ class TestValidateAsmTool:
         result = json.loads(result_json)
         assert result['is_valid'] is False
         assert 'error_message' in result
+
+
+
+
+
+
+
