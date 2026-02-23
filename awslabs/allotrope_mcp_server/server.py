@@ -133,11 +133,12 @@ def _resolve_refs(
 
             ref_schema = cache[base_uri]
 
-            # Navigate to fragment path
+            # Navigate to fragment path (decode JSON Pointer escapes per RFC 6901)
             if fragment:
                 segments = [s for s in fragment.split('/') if s]
                 definition = ref_schema
                 for segment in segments:
+                    segment = segment.replace('~1', '/').replace('~0', '~')
                     definition = definition[segment]
             else:
                 definition = ref_schema
