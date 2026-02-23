@@ -42,6 +42,52 @@ _GITLAB_REF = 'main'
 _GITLAB_PATH = 'json-schemas/adm'
 _GITLAB_TIMEOUT_SECONDS = 30
 
+_PURL_PREFIX = 'http://purl.allotrope.org/'
+_JSON_SCHEMAS_PREFIX = 'json-schemas/'
+
+
+def _normalize_schema_id(schema_id: str) -> str:
+    """Parse a flexible schema identifier into a normalized path.
+
+    Accepts full URIs, ``json-schemas/``-prefixed paths, or bare suffixes
+    and returns a path starting with ``json-schemas/``.
+
+    Args:
+        schema_id: The user-provided schema identifier.
+
+    Returns:
+        Normalized path starting with ``json-schemas/``.
+    """
+    path = schema_id
+    if _PURL_PREFIX in path:
+        path = path.split(_PURL_PREFIX, 1)[1]
+    if _JSON_SCHEMAS_PREFIX in path:
+        path = path[path.index(_JSON_SCHEMAS_PREFIX):]
+    else:
+        path = _JSON_SCHEMAS_PREFIX + path
+    return path
+
+
+def _generate_embed_filename(filename: str) -> str:
+    """Transform a schema filename into its embed variant.
+
+    Inserts ``.embed`` before the extension portion and ensures the result
+    ends with ``.json``.
+
+    Args:
+        filename: Original schema filename (e.g. ``conductivity.schema``).
+
+    Returns:
+        Embed filename (e.g. ``conductivity.embed.schema.json``).
+    """
+    dot_idx = filename.index('.')
+    name_part = filename[:dot_idx]
+    ext_part = filename[dot_idx:]
+    result = f'{name_part}.embed{ext_part}'
+    if not result.endswith('.json'):
+        result += '.json'
+    return result
+
 
 def _fetch_asm_techniques() -> list[str]:
     """Fetch ASM technique names from the GitLab repository tree API.
