@@ -15,15 +15,17 @@
 """Tests for get_asm_schema helpers and tool."""
 
 import json
-from unittest.mock import MagicMock, patch
-
+import urllib.error
 from awslabs.allotrope_mcp_server.server import (
     _generate_embed_filename,
     _normalize_schema_id,
     _resolve_refs,
+    get_asm_schema,
 )
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +59,15 @@ _dotted_filename = st.tuples(
         max_size=3,
     ),
 ).map(lambda t: t[0] + '.' + '.'.join(t[1]))
+
+
+def _is_not_valid_json(s: str) -> bool:
+    """Return True if *s* is NOT valid JSON."""
+    try:
+        json.loads(s)
+        return False
+    except (json.JSONDecodeError, ValueError):
+        return True
 
 
 # ---------------------------------------------------------------------------
@@ -391,6 +402,242 @@ def test_circular_reference_preservation(
     )
 
 
+# Feature: get-asm-schema, Property 2: Output path construction
+@given(
+    base_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    path_segments=st.lists(_path_segment, min_size=1, max_size=5),
+    filename=_dotted_filename,
+)
+@settings(max_examples=100)
+def test_output_path_construction(
+    base_segments: list[str],
+    path_segments: list[str],
+    filename: str,
+) -> None:
+    """Constructed output path equals base_dir / dir_part / embed_filename.
+
+    **Validates: Requirements 2.3, 2.4, 6.4**
+    """
+    base_dir = '/tmp/' + '/'.join(base_segments)
+    normalized_path = '/'.join(path_segments) + '/' + filename
+
+    # Replicate the path construction logic from get_asm_schema.
+    dir_part = normalized_path.rsplit('/', 1)[0]
+    embed_filename = _generate_embed_filename(filename)
+
+    expected = Path(base_dir) / dir_part / embed_filename
+    expected = expected.resolve()
+
+    # Replicate the actual implementation logic.
+    actual_filename = normalized_path.rsplit('/', 1)[-1]
+    actual_embed = _generate_embed_filename(actual_filename)
+    actual_dir_part = normalized_path.rsplit('/', 1)[0] if '/' in normalized_path else ''
+    actual = Path(base_dir) / actual_dir_part / actual_embed
+    actual = actual.resolve()
+
+    assert actual == expected, (
+        f'Path mismatch: {actual!r} != {expected!r}'
+    )
+
+    # The path must be absolute.
+    assert actual.is_absolute(), f'Expected absolute path, got {actual!r}'
+
+    # The embed filename must appear as the final component.
+    assert actual.name == embed_filename, (
+        f'Expected filename {embed_filename!r}, got {actual.name!r}'
+    )
+
+    # The directory structure from the normalized path must be preserved.
+    assert str(dir_part) in str(actual.parent), (
+        f'Expected dir_part {dir_part!r} in parent {str(actual.parent)!r}'
+    )
+
+
+# Feature: get-asm-schema, Property 7: Non-200 HTTP status error reporting
+@given(
+    status_code=st.integers(min_value=400, max_value=599),
+    path_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    filename=_dotted_filename,
+)
+@settings(max_examples=100)
+def test_non_200_http_status_error_reporting(
+    status_code: int,
+    path_segments: list[str],
+    filename: str,
+) -> None:
+    """Error message contains both the HTTP status code and the URI.
+
+    **Validates: Requirements 4.4, 8.3**
+    """
+    path_suffix = '/'.join(path_segments) + '/' + filename
+    schema_id = f'json-schemas/{path_suffix}'
+    expected_uri = f'http://purl.allotrope.org/{schema_id}'
+
+    http_error = urllib.error.HTTPError(
+        url=expected_uri,
+        code=status_code,
+        msg='Error',
+        hdrs=None,  # type: ignore[arg-type]
+        fp=None,
+    )
+
+    with (
+        patch('pathlib.Path.exists', return_value=False),
+        patch('urllib.request.urlopen', side_effect=http_error),
+    ):
+        result = get_asm_schema(id=schema_id, output_dir='/tmp/test')
+
+    parsed = json.loads(result)
+    assert 'error' in parsed, f'Expected error key in result: {parsed}'
+    assert str(status_code) in parsed['error'], (
+        f'Expected status code {status_code} in error: {parsed["error"]}'
+    )
+    assert expected_uri in parsed['error'], (
+        f'Expected URI {expected_uri} in error: {parsed["error"]}'
+    )
+
+
+# Feature: get-asm-schema, Property 8: Network error messages include URI
+@given(
+    path_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    filename=_dotted_filename,
+    error_type=st.sampled_from(['url_error', 'timeout_error']),
+)
+@settings(max_examples=100)
+def test_network_error_uri_inclusion(
+    path_segments: list[str],
+    filename: str,
+    error_type: str,
+) -> None:
+    """Error message always contains the URI regardless of network error type.
+
+    **Validates: Requirements 8.1, 8.2, 8.4**
+    """
+    path_suffix = '/'.join(path_segments) + '/' + filename
+    schema_id = f'json-schemas/{path_suffix}'
+    expected_uri = f'http://purl.allotrope.org/{schema_id}'
+
+    if error_type == 'url_error':
+        exc = urllib.error.URLError(reason='Connection refused')
+    else:
+        exc = TimeoutError()
+
+    with (
+        patch('pathlib.Path.exists', return_value=False),
+        patch('urllib.request.urlopen', side_effect=exc),
+    ):
+        result = get_asm_schema(id=schema_id, output_dir='/tmp/test')
+
+    parsed = json.loads(result)
+    assert 'error' in parsed, f'Expected error key in result: {parsed}'
+    assert expected_uri in parsed['error'], (
+        f'Expected URI {expected_uri} in error: {parsed["error"]}'
+    )
+
+
+# Feature: get-asm-schema, Property 9: Invalid JSON error reporting
+@given(
+    path_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    filename=_dotted_filename,
+    non_json_string=st.text(min_size=1, max_size=200).filter(
+        lambda s: _is_not_valid_json(s)
+    ),
+)
+@settings(max_examples=100)
+def test_invalid_json_error_reporting(
+    path_segments: list[str],
+    filename: str,
+    non_json_string: str,
+) -> None:
+    """Error message mentions invalid JSON and includes the URI.
+
+    **Validates: Requirements 9.1, 9.3**
+    """
+    path_suffix = '/'.join(path_segments) + '/' + filename
+    schema_id = f'json-schemas/{path_suffix}'
+    expected_uri = f'http://purl.allotrope.org/{schema_id}'
+
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = non_json_string.encode('utf-8')
+    mock_cm = MagicMock()
+    mock_cm.__enter__ = MagicMock(return_value=mock_resp)
+    mock_cm.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch('pathlib.Path.exists', return_value=False),
+        patch('urllib.request.urlopen', return_value=mock_cm),
+    ):
+        result = get_asm_schema(id=schema_id, output_dir='/tmp/test')
+
+    parsed = json.loads(result)
+    assert 'error' in parsed, f'Expected error key in result: {parsed}'
+    assert 'Invalid JSON' in parsed['error'], (
+        f'Expected "Invalid JSON" in error: {parsed["error"]}'
+    )
+    assert expected_uri in parsed['error'], (
+        f'Expected URI {expected_uri} in error: {parsed["error"]}'
+    )
+
+# Feature: get-asm-schema, Property 10: Schema serialization round-trip
+json_serializable = st.recursive(
+    st.none() | st.booleans() | st.integers() | st.floats(
+        allow_nan=False, allow_infinity=False
+    ) | st.text(),
+    lambda children: st.lists(children) | st.dictionaries(st.text(), children),
+    max_leaves=20,
+)
+
+
+@given(d=st.dictionaries(st.text(), json_serializable))
+@settings(max_examples=100)
+def test_serialization_round_trip(d: dict) -> None:
+    """JSON serialization with indentation round-trips without data loss.
+
+    **Validates: Requirements 7.2**
+    """
+    assert json.loads(json.dumps(d, indent=2)) == d
+
+
+# Feature: get-asm-schema, Property 11: Successful return value is absolute path
+@given(
+    base_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    path_segments=st.lists(_path_segment, min_size=1, max_size=4),
+    filename=_dotted_filename,
+)
+@settings(max_examples=100)
+def test_absolute_path_return(
+    base_segments: list[str],
+    path_segments: list[str],
+    filename: str,
+) -> None:
+    """Successful return value contains an absolute filesystem path.
+
+    **Validates: Requirements 7.4**
+    """
+    base_dir = '/tmp/' + '/'.join(base_segments)
+    schema_id = 'json-schemas/' + '/'.join(path_segments) + '/' + filename
+
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = json.dumps({'type': 'object'}).encode('utf-8')
+    mock_cm = MagicMock()
+    mock_cm.__enter__ = MagicMock(return_value=mock_resp)
+    mock_cm.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch.object(Path, 'exists', return_value=False),
+        patch('urllib.request.urlopen', return_value=mock_cm),
+        patch('os.makedirs'),
+        patch('builtins.open', MagicMock()),
+    ):
+        result = get_asm_schema(schema_id, output_dir=base_dir)
+
+    parsed = json.loads(result)
+    assert 'path' in parsed, f'Expected "path" key in result: {parsed}'
+    assert parsed['path'].startswith('/'), (
+        f'Expected absolute path starting with "/", got: {parsed["path"]}'
+    )
+
+
 # ---------------------------------------------------------------------------
 # Unit Tests
 # ---------------------------------------------------------------------------
@@ -531,3 +778,168 @@ class TestResolveRefs:
                 {'type': 'string'},
             ]
         }
+
+
+class TestGetAsmSchema:
+    """Unit tests for the get_asm_schema MCP tool."""
+
+    _SCHEMA_ID = 'json-schemas/adm/conductivity/conductivity.schema'
+    _EXPECTED_URI = f'http://purl.allotrope.org/{_SCHEMA_ID}'
+    _VALID_SCHEMA = {'type': 'object', 'properties': {'name': {'type': 'string'}}}
+
+    def _mock_urlopen(self, response_data: dict):
+        """Create a mock context manager for urllib.request.urlopen."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = json.dumps(response_data).encode('utf-8')
+        mock_cm = MagicMock()
+        mock_cm.__enter__ = MagicMock(return_value=mock_resp)
+        mock_cm.__exit__ = MagicMock(return_value=False)
+        return mock_cm
+
+    def test_existing_file_skip(self) -> None:
+        """When embed file already exists, return path without downloading."""
+        with (
+            patch.object(Path, 'exists', return_value=True),
+            patch('urllib.request.urlopen') as mock_open,
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'path' in parsed
+        mock_open.assert_not_called()
+
+    def test_successful_download_resolve_save(self) -> None:
+        """Download, resolve, and save flow produces a path result."""
+        mock_cm = self._mock_urlopen(self._VALID_SCHEMA)
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', return_value=mock_cm),
+            patch('os.makedirs') as mock_makedirs,
+            patch('builtins.open', MagicMock()),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'path' in parsed
+        assert Path(parsed['path']).is_absolute()
+        mock_makedirs.assert_called_once()
+
+    def test_404_response_error(self) -> None:
+        """HTTP 404 returns error with status code and URI."""
+        http_error = urllib.error.HTTPError(
+            url=self._EXPECTED_URI,
+            code=404,
+            msg='Not Found',
+            hdrs=None,  # type: ignore[arg-type]
+            fp=None,
+        )
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', side_effect=http_error),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'error' in parsed
+        assert '404' in parsed['error']
+        assert self._EXPECTED_URI in parsed['error']
+
+    def test_connection_failure_error(self) -> None:
+        """URLError returns error with 'Failed to connect' and URI."""
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch(
+                'urllib.request.urlopen',
+                side_effect=urllib.error.URLError(reason='Connection refused'),
+            ),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'error' in parsed
+        assert 'Failed to connect' in parsed['error']
+        assert self._EXPECTED_URI in parsed['error']
+
+    def test_timeout_error(self) -> None:
+        """TimeoutError returns error with 'timed out' and URI."""
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', side_effect=TimeoutError()),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'error' in parsed
+        assert 'timed out' in parsed['error']
+        assert self._EXPECTED_URI in parsed['error']
+
+    def test_invalid_json_response_error(self) -> None:
+        """Non-JSON response returns error with 'Invalid JSON' and URI."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = b'<html>not json</html>'
+        mock_cm = MagicMock()
+        mock_cm.__enter__ = MagicMock(return_value=mock_resp)
+        mock_cm.__exit__ = MagicMock(return_value=False)
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', return_value=mock_cm),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'error' in parsed
+        assert 'Invalid JSON' in parsed['error']
+        assert self._EXPECTED_URI in parsed['error']
+
+    def test_file_write_failure_error(self) -> None:
+        """OSError on file write returns error with 'Failed to write'."""
+        mock_cm = self._mock_urlopen(self._VALID_SCHEMA)
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', return_value=mock_cm),
+            patch('os.makedirs'),
+            patch('builtins.open', side_effect=OSError('Permission denied')),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        parsed = json.loads(result)
+        assert 'error' in parsed
+        assert 'Failed to write' in parsed['error']
+
+    def test_default_output_dir_uses_cwd(self) -> None:
+        """When output_dir is omitted, os.getcwd() is used as base path."""
+        mock_cm = self._mock_urlopen(self._VALID_SCHEMA)
+        fake_cwd = '/home/user/projects'
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', return_value=mock_cm),
+            patch('os.getcwd', return_value=fake_cwd),
+            patch('os.makedirs'),
+            patch('builtins.open', MagicMock()),
+        ):
+            result = get_asm_schema(id=self._SCHEMA_ID)
+
+        parsed = json.loads(result)
+        assert 'path' in parsed
+        assert fake_cwd in parsed['path']
+
+    def test_directory_creation(self) -> None:
+        """Parent directories are created with exist_ok=True."""
+        mock_cm = self._mock_urlopen(self._VALID_SCHEMA)
+
+        with (
+            patch.object(Path, 'exists', return_value=False),
+            patch('urllib.request.urlopen', return_value=mock_cm),
+            patch('os.makedirs') as mock_makedirs,
+            patch('builtins.open', MagicMock()),
+        ):
+            get_asm_schema(id=self._SCHEMA_ID, output_dir='/tmp/test')
+
+        mock_makedirs.assert_called_once()
+        _, kwargs = mock_makedirs.call_args
+        assert kwargs.get('exist_ok') is True

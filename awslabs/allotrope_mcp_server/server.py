@@ -15,6 +15,7 @@
 """awslabs allotrope MCP Server implementation."""
 
 import json
+import os
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -22,6 +23,7 @@ from dataclasses import asdict, dataclass, field
 from jsonschema import Draft202012Validator
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
+from pathlib import Path
 
 
 mcp = FastMCP(
@@ -341,6 +343,82 @@ def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
     if d['error_message'] is None:
         del d['error_message']
     return json.dumps(d)
+
+
+@mcp.tool()
+def get_asm_schema(id: str, output_dir: str = '') -> str:
+    """Download and resolve an Allotrope ASM JSON schema.
+
+    Downloads the schema identified by ``id`` from the official Allotrope PURL
+    repository, resolves all ``$ref`` references inline, and saves the fully
+    resolved schema to the local filesystem.  If the resolved file already
+    exists locally it is returned immediately without downloading.
+
+    Args:
+        id: Schema identifier — accepts a full URI
+            (``http://purl.allotrope.org/...``), a ``json-schemas/``-prefixed
+            path, or a bare suffix path.
+        output_dir: Optional base directory for saving the schema.  Defaults
+            to the current working directory when empty.
+
+    Returns:
+        JSON string with a ``path`` key containing the absolute path to the
+        saved file, or an ``error`` key with a description on failure.
+    """
+    try:
+        normalized_path = _normalize_schema_id(id)
+        filename = normalized_path.rsplit('/', 1)[-1]
+        embed_filename = _generate_embed_filename(filename)
+
+        base_dir = output_dir if output_dir else os.getcwd()
+        dir_part = normalized_path.rsplit('/', 1)[0] if '/' in normalized_path else ''
+        absolute_path = Path(base_dir) / dir_part / embed_filename
+        absolute_path = absolute_path.resolve()
+
+        if absolute_path.exists():
+            return json.dumps({'path': str(absolute_path)})
+
+        uri = f'{_PURL_PREFIX}{normalized_path}'
+
+        try:
+            req = urllib.request.Request(uri, method='GET')
+            with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
+                body = resp.read().decode('utf-8')
+        except urllib.error.HTTPError as exc:
+            return json.dumps(
+                {'error': f'Failed to download {uri}: HTTP {exc.code}'}
+            )
+        except urllib.error.URLError as exc:
+            return json.dumps(
+                {'error': f'Failed to connect to {uri}: {exc.reason}'}
+            )
+        except TimeoutError:
+            return json.dumps({'error': f'Request timed out for {uri}'})
+
+        try:
+            schema = json.loads(body)
+        except json.JSONDecodeError:
+            return json.dumps(
+                {'error': f'Invalid JSON received from {uri}'}
+            )
+
+        cache: dict[str, dict] = {}
+        resolving: set[str] = set()
+        resolved = _resolve_refs(schema, cache, resolving, uri)
+
+        try:
+            os.makedirs(absolute_path.parent, exist_ok=True)
+            with open(absolute_path, 'w') as f:
+                json.dump(resolved, f, indent=2)
+        except OSError as exc:
+            return json.dumps(
+                {'error': f'Failed to write schema to {absolute_path}: {exc}'}
+            )
+
+        return json.dumps({'path': str(absolute_path)})
+
+    except Exception as exc:
+        return json.dumps({'error': str(exc)})
 
 
 def main():
