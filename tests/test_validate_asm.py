@@ -135,10 +135,3 @@ class TestValidateAsmTool:
         result = json.loads(result_json)
         assert result['is_valid'] is False
         assert 'error_message' in result
-
-
-
-
-
-
-

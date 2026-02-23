@@ -35,9 +35,7 @@ TEST_SCHEMA = {
 }
 
 # Strategy that generates documents valid against TEST_SCHEMA.
-valid_documents = st.fixed_dictionaries(
-    {'name': st.text(min_size=0), 'age': st.integers()}
-)
+valid_documents = st.fixed_dictionaries({'name': st.text(min_size=0), 'age': st.integers()})
 
 
 def _write_tmp_json(data: object, suffix: str = '.json') -> str:

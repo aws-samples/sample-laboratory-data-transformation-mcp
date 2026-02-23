@@ -64,11 +64,13 @@ def _fetch_asm_techniques() -> list[str]:
 
     try:
         while True:
-            params = urllib.parse.urlencode({
-                'ref': _GITLAB_REF,
-                'path': _GITLAB_PATH,
-                'page': page,
-            })
+            params = urllib.parse.urlencode(
+                {
+                    'ref': _GITLAB_REF,
+                    'path': _GITLAB_PATH,
+                    'page': page,
+                }
+            )
             url = f'{_GITLAB_TREE_URL}?{params}'
             req = urllib.request.Request(url, method='GET')
 
@@ -171,6 +173,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
 
     return ValidationResult(is_valid=len(errors) == 0, errors=errors)
 
+
 @mcp.tool()
 async def list_asm_techniques() -> str:
     """List all available Allotrope Simple Model (ASM) techniques.
@@ -196,7 +199,6 @@ async def list_asm_techniques() -> str:
         return json.dumps({'error': 'GitLab API returned invalid JSON'})
     except Exception as exc:
         return json.dumps({'error': f'Unexpected error: {exc}'})
-
 
 
 @mcp.tool()
