@@ -138,7 +138,7 @@ All of the following are equivalent:
 - Generates an embed filename (e.g., `conductivity.schema` → `conductivity.embed.schema.json`)
 - Creates parent directories as needed and saves the formatted JSON
 - Returns a JSON object with a `path` key on success, or an `error` key on failure
-- Detects circular `$ref` chains and preserves them as-is without hanging
+- Uses the `jsonref` library for `$ref` resolution; circular `$ref` chains are handled safely without hanging
 
 ### list_asm_techniques
 

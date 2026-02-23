@@ -8,6 +8,7 @@ description = "An AWS Labs Model Context Protocol (MCP) server for allotrope"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "jsonref>=1.0.0",
     "jsonschema>=4.23.0",
     "loguru>=0.7.0",
     "mcp[cli]>=1.6.0",

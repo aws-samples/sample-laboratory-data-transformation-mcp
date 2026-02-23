@@ -15,6 +15,7 @@
 """awslabs allotrope MCP Server implementation."""
 
 import json
+import jsonref
 import os
 import urllib.error
 import urllib.parse
@@ -24,6 +25,7 @@ from jsonschema import Draft202012Validator
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
+from typing import Any
 
 
 mcp = FastMCP(
@@ -42,7 +44,7 @@ mcp = FastMCP(
 _GITLAB_TREE_URL = 'https://gitlab.com/api/v4/projects/42714196/repository/tree'
 _GITLAB_REF = 'main'
 _GITLAB_PATH = 'json-schemas/adm'
-_GITLAB_TIMEOUT_SECONDS = 30
+_HTTP_TIMEOUT_SECONDS = 30
 
 _PURL_PREFIX = 'http://purl.allotrope.org/'
 _JSON_SCHEMAS_PREFIX = 'json-schemas/'
@@ -90,84 +92,26 @@ def _generate_embed_filename(filename: str) -> str:
         result += '.json'
     return result
 
-def _resolve_refs(
-    schema: dict, cache: dict[str, dict], resolving: set[str], current_uri: str
-) -> dict:
-    """Recursively resolve all external ``$ref`` references in a JSON schema.
-
-    Walks the schema dict and replaces each external ``$ref`` (URI starting
-    with ``http``) with the referenced definition downloaded and parsed from
-    the remote server.  A per-invocation ``cache`` avoids duplicate downloads
-    and a ``resolving`` set detects circular reference chains.
+def _asm_json_loader(uri: str, **kwargs: Any) -> Any:
+    """Fetch and parse a remote JSON schema for jsonref resolution.
 
     Args:
-        schema: The JSON schema dict to resolve.
-        cache: Mutable mapping of URI to parsed JSON, shared across recursion.
-        resolving: Mutable set of URIs currently on the resolution stack.
-        current_uri: The URI of the schema being resolved (used for logging).
+        uri: The absolute URI to fetch.
+        **kwargs: Additional keyword arguments (unused, required by jsonref loader protocol).
 
     Returns:
-        A new dict with all resolvable ``$ref`` values replaced inline.
+        Parsed JSON object (dict or list).
+
+    Raises:
+        urllib.error.HTTPError: On non-2xx HTTP responses.
+        urllib.error.URLError: On connection failures.
+        TimeoutError: When the request exceeds the timeout.
+        json.JSONDecodeError: When the response is not valid JSON.
     """
-    result: dict = {}
-    for key, value in schema.items():
-        if key == '$ref' and isinstance(value, str) and value.startswith('http'):
-            parts = value.split('#', 1)
-            base_uri = parts[0]
-            fragment = parts[1] if len(parts) > 1 else ''
-
-            if base_uri in resolving:
-                logger.warning(
-                    f'Circular $ref detected: {base_uri} '
-                    f'(while resolving {current_uri})'
-                )
-                result[key] = value
-                continue
-
-            # Download or retrieve from cache
-            if base_uri not in cache:
-                req = urllib.request.Request(base_uri, method='GET')
-                with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
-                    body = resp.read().decode('utf-8')
-                    cache[base_uri] = json.loads(body)
-
-            ref_schema = cache[base_uri]
-
-            # Navigate to fragment path (decode JSON Pointer escapes per RFC 6901)
-            if fragment:
-                segments = [s for s in fragment.split('/') if s]
-                definition = ref_schema
-                for segment in segments:
-                    segment = segment.replace('~1', '/').replace('~0', '~')
-                    definition = definition[segment]
-            else:
-                definition = ref_schema
-
-            # Recursively resolve the extracted definition
-            resolving.add(base_uri)
-            if isinstance(definition, dict):
-                resolved = _resolve_refs(definition, cache, resolving, base_uri)
-            else:
-                resolved = definition
-            resolving.discard(base_uri)
-
-            # Replace the entire $ref node with the resolved definition
-            return resolved
-
-        elif isinstance(value, dict):
-            result[key] = _resolve_refs(value, cache, resolving, current_uri)
-        elif isinstance(value, list):
-            result[key] = [
-                _resolve_refs(item, cache, resolving, current_uri)
-                if isinstance(item, dict)
-                else item
-                for item in value
-            ]
-        else:
-            result[key] = value
-
-    return result
-
+    req = urllib.request.Request(uri, method='GET')
+    with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
+        body = resp.read().decode('utf-8')
+        return json.loads(body)
 
 
 def _fetch_asm_techniques() -> list[str]:
@@ -202,7 +146,7 @@ def _fetch_asm_techniques() -> list[str]:
             req = urllib.request.Request(url, method='GET')
 
             try:
-                with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
+                with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
                     body = resp.read().decode('utf-8')
                     entries = json.loads(body)
                     techniques.extend(
@@ -383,7 +327,7 @@ def get_asm_schema(id: str, output_dir: str = '') -> str:
 
         try:
             req = urllib.request.Request(uri, method='GET')
-            with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
+            with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
                 body = resp.read().decode('utf-8')
         except urllib.error.HTTPError as exc:
             return json.dumps(
@@ -403,9 +347,60 @@ def get_asm_schema(id: str, output_dir: str = '') -> str:
                 {'error': f'Invalid JSON received from {uri}'}
             )
 
-        cache: dict[str, dict] = {}
-        resolving: set[str] = set()
-        resolved = _resolve_refs(schema, cache, resolving, uri)
+        try:
+
+            def _deep_resolve(obj: Any) -> Any:
+                """Recursively convert jsonref proxy objects to plain Python types.
+
+                When *merge_props* is enabled on ``jsonref.replace_refs``, the
+                ``JsonRef`` proxy merges sibling keys (e.g. ``$asm.pattern``)
+                from the original ``$ref`` object into the resolved target.
+                Those merged keys are visible when iterating the proxy as a
+                dict but are **not** present on ``__subject__``.  We therefore
+                iterate the proxy directly instead of unwrapping it.
+                """
+                if isinstance(obj, jsonref.JsonRef):
+                    # Iterate the proxy (includes merged sibling keys).
+                    return {k: _deep_resolve(v) for k, v in obj.items()}
+                if isinstance(obj, dict):
+                    return {k: _deep_resolve(v) for k, v in obj.items()}
+                if isinstance(obj, list):
+                    return [_deep_resolve(item) for item in obj]
+                return obj
+
+            refs_replaced = jsonref.replace_refs(
+                schema, loader=_asm_json_loader, lazy_load=False, merge_props=True
+            )
+            resolved = _deep_resolve(refs_replaced)
+        except jsonref.JsonRefError as exc:
+            cause = exc.__cause__
+            ref_uri = exc.uri
+            if isinstance(cause, urllib.error.HTTPError):
+                return json.dumps(
+                    {'error': f'Failed to resolve $ref {ref_uri}: HTTP {cause.code}'}
+                )
+            if isinstance(cause, urllib.error.URLError):
+                return json.dumps(
+                    {'error': f'Failed to resolve $ref {ref_uri}: {cause.reason}'}
+                )
+            if isinstance(cause, TimeoutError):
+                return json.dumps(
+                    {
+                        'error': (
+                            f'Request timed out while resolving $ref {ref_uri}'
+                        )
+                    }
+                )
+            if isinstance(cause, json.JSONDecodeError):
+                return json.dumps(
+                    {
+                        'error': (
+                            f'Invalid JSON encountered while resolving'
+                            f' $ref {ref_uri}'
+                        )
+                    }
+                )
+            return json.dumps({'error': f'Failed to resolve $ref {ref_uri}: {exc}'})
 
         try:
             os.makedirs(absolute_path.parent, exist_ok=True)
