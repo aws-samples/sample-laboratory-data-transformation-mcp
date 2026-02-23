@@ -88,6 +88,84 @@ def _generate_embed_filename(filename: str) -> str:
         result += '.json'
     return result
 
+def _resolve_refs(
+    schema: dict, cache: dict[str, dict], resolving: set[str], current_uri: str
+) -> dict:
+    """Recursively resolve all external ``$ref`` references in a JSON schema.
+
+    Walks the schema dict and replaces each external ``$ref`` (URI starting
+    with ``http``) with the referenced definition downloaded and parsed from
+    the remote server.  A per-invocation ``cache`` avoids duplicate downloads
+    and a ``resolving`` set detects circular reference chains.
+
+    Args:
+        schema: The JSON schema dict to resolve.
+        cache: Mutable mapping of URI to parsed JSON, shared across recursion.
+        resolving: Mutable set of URIs currently on the resolution stack.
+        current_uri: The URI of the schema being resolved (used for logging).
+
+    Returns:
+        A new dict with all resolvable ``$ref`` values replaced inline.
+    """
+    result: dict = {}
+    for key, value in schema.items():
+        if key == '$ref' and isinstance(value, str) and value.startswith('http'):
+            parts = value.split('#', 1)
+            base_uri = parts[0]
+            fragment = parts[1] if len(parts) > 1 else ''
+
+            if base_uri in resolving:
+                logger.warning(
+                    f'Circular $ref detected: {base_uri} '
+                    f'(while resolving {current_uri})'
+                )
+                result[key] = value
+                continue
+
+            # Download or retrieve from cache
+            if base_uri not in cache:
+                req = urllib.request.Request(base_uri, method='GET')
+                with urllib.request.urlopen(req, timeout=_GITLAB_TIMEOUT_SECONDS) as resp:
+                    body = resp.read().decode('utf-8')
+                    cache[base_uri] = json.loads(body)
+
+            ref_schema = cache[base_uri]
+
+            # Navigate to fragment path
+            if fragment:
+                segments = [s for s in fragment.split('/') if s]
+                definition = ref_schema
+                for segment in segments:
+                    definition = definition[segment]
+            else:
+                definition = ref_schema
+
+            # Recursively resolve the extracted definition
+            resolving.add(base_uri)
+            if isinstance(definition, dict):
+                resolved = _resolve_refs(definition, cache, resolving, base_uri)
+            else:
+                resolved = definition
+            resolving.discard(base_uri)
+
+            # Replace the entire $ref node with the resolved definition
+            return resolved
+
+        elif isinstance(value, dict):
+            result[key] = _resolve_refs(value, cache, resolving, current_uri)
+        elif isinstance(value, list):
+            result[key] = [
+                _resolve_refs(item, cache, resolving, current_uri)
+                if isinstance(item, dict)
+                else item
+                for item in value
+            ]
+        else:
+            result[key] = value
+
+    return result
+
+
 
 def _fetch_asm_techniques() -> list[str]:
     """Fetch ASM technique names from the GitLab repository tree API.
