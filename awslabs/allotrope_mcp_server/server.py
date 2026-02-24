@@ -26,28 +26,27 @@ from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 from typing import Any
-
-
-mcp = FastMCP(
-    'awslabs.allotrope-mcp-server',
-    instructions=(
-        'This MCP server provides tools to convert instrument data files into'
-        ' standardized Allotrope Simple Model (ASM) format.'
-    ),
-    dependencies=[
-        'jsonschema',
-        'loguru',
-        'pydantic',
-    ],
+from awslabs.allotrope_mcp_server.constants import (
+    GITLAB_TREE_URL,
+    GITLAB_REF,
+    GITLAB_PATH,
+    HTTP_TIMEOUT_SECONDS,
+    PURL_PREFIX,
+    JSON_SCHEMAS_PREFIX,
 )
 
-_GITLAB_TREE_URL = 'https://gitlab.com/api/v4/projects/42714196/repository/tree'
-_GITLAB_REF = 'main'
-_GITLAB_PATH = 'json-schemas/adm'
-_HTTP_TIMEOUT_SECONDS = 30
-
-_PURL_PREFIX = 'http://purl.allotrope.org/'
-_JSON_SCHEMAS_PREFIX = 'json-schemas/'
+mcp = FastMCP(
+    "awslabs.allotrope-mcp-server",
+    instructions=(
+        "This MCP server provides tools to convert instrument data files into"
+        " standardized Allotrope Simple Model (ASM) format."
+    ),
+    dependencies=[
+        "jsonschema",
+        "loguru",
+        "pydantic",
+    ],
+)
 
 
 def _normalize_schema_id(schema_id: str) -> str:
@@ -63,12 +62,12 @@ def _normalize_schema_id(schema_id: str) -> str:
         Normalized path starting with ``json-schemas/``.
     """
     path = schema_id
-    if _PURL_PREFIX in path:
-        path = path.split(_PURL_PREFIX, 1)[1]
-    if _JSON_SCHEMAS_PREFIX in path:
-        path = path[path.index(_JSON_SCHEMAS_PREFIX):]
+    if PURL_PREFIX in path:
+        path = path.split(PURL_PREFIX, 1)[1]
+    if JSON_SCHEMAS_PREFIX in path:
+        path = path[path.index(JSON_SCHEMAS_PREFIX) :]
     else:
-        path = _JSON_SCHEMAS_PREFIX + path
+        path = JSON_SCHEMAS_PREFIX + path
     return path
 
 
@@ -84,13 +83,14 @@ def _generate_embed_filename(filename: str) -> str:
     Returns:
         Embed filename (e.g. ``conductivity.embed.schema.json``).
     """
-    dot_idx = filename.index('.')
+    dot_idx = filename.index(".")
     name_part = filename[:dot_idx]
     ext_part = filename[dot_idx:]
-    result = f'{name_part}.embed{ext_part}'
-    if not result.endswith('.json'):
-        result += '.json'
+    result = f"{name_part}.embed{ext_part}"
+    if not result.endswith(".json"):
+        result += ".json"
     return result
+
 
 def _asm_json_loader(uri: str, **kwargs: Any) -> Any:
     """Fetch and parse a remote JSON schema for jsonref resolution.
@@ -108,9 +108,9 @@ def _asm_json_loader(uri: str, **kwargs: Any) -> Any:
         TimeoutError: When the request exceeds the timeout.
         json.JSONDecodeError: When the response is not valid JSON.
     """
-    req = urllib.request.Request(uri, method='GET')
-    with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
-        body = resp.read().decode('utf-8')
+    req = urllib.request.Request(uri, method="GET")
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
+        body = resp.read().decode("utf-8")
         return json.loads(body)
 
 
@@ -129,7 +129,7 @@ def _fetch_asm_techniques() -> list[str]:
         TimeoutError: If an individual request exceeds the timeout.
         json.JSONDecodeError: If the response body is not valid JSON.
     """
-    logger.info('Fetching ASM techniques from GitLab repository')
+    logger.info("Fetching ASM techniques from GitLab repository")
     techniques: list[str] = []
     page = 1
 
@@ -137,22 +137,24 @@ def _fetch_asm_techniques() -> list[str]:
         while True:
             params = urllib.parse.urlencode(
                 {
-                    'ref': _GITLAB_REF,
-                    'path': _GITLAB_PATH,
-                    'page': page,
+                    "ref": GITLAB_REF,
+                    "path": GITLAB_PATH,
+                    "page": page,
                 }
             )
-            url = f'{_GITLAB_TREE_URL}?{params}'
-            req = urllib.request.Request(url, method='GET')
+            url = f"{GITLAB_TREE_URL}?{params}"
+            req = urllib.request.Request(url, method="GET")
 
             try:
-                with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
-                    body = resp.read().decode('utf-8')
+                with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
+                    body = resp.read().decode("utf-8")
                     entries = json.loads(body)
                     techniques.extend(
-                        entry['name'] for entry in entries if entry.get('type') == 'tree'
+                        entry["name"]
+                        for entry in entries
+                        if entry.get("type") == "tree"
                     )
-                    next_page = resp.headers.get('x-next-page', '').strip()
+                    next_page = resp.headers.get("x-next-page", "").strip()
                     if not next_page:
                         break
                     page = int(next_page)
@@ -163,9 +165,9 @@ def _fetch_asm_techniques() -> list[str]:
             except urllib.error.URLError:
                 raise
 
-        logger.info(f'Fetched {len(techniques)} ASM techniques')
+        logger.info(f"Fetched {len(techniques)} ASM techniques")
     except Exception:
-        logger.error('Failed to fetch ASM techniques from GitLab')
+        logger.error("Failed to fetch ASM techniques from GitLab")
         raise
 
     return techniques
@@ -202,7 +204,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except FileNotFoundError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Document file not found: {document_path}',
+            error_message=f"Document file not found: {document_path}",
         )
 
     try:
@@ -210,7 +212,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except json.JSONDecodeError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Document file contains malformed JSON: {document_path}',
+            error_message=f"Document file contains malformed JSON: {document_path}",
         )
 
     # Read schema
@@ -220,7 +222,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except FileNotFoundError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Schema file not found: {schema_path}',
+            error_message=f"Schema file not found: {schema_path}",
         )
 
     try:
@@ -228,18 +230,20 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except json.JSONDecodeError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Schema file contains malformed JSON: {schema_path}',
+            error_message=f"Schema file contains malformed JSON: {schema_path}",
         )
 
     # Validate
     validator = Draft202012Validator(schema)
     errors = [
         ValidationError(
-            path='.'.join(str(p) for p in err.absolute_path) or '(root)',
+            path=".".join(str(p) for p in err.absolute_path) or "(root)",
             message=err.message,
             validator=err.validator,
         )
-        for err in sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
+        for err in sorted(
+            validator.iter_errors(document), key=lambda e: list(e.absolute_path)
+        )
     ]
 
     return ValidationResult(is_valid=len(errors) == 0, errors=errors)
@@ -259,17 +263,19 @@ async def list_asm_techniques() -> str:
     """
     try:
         techniques = _fetch_asm_techniques()
-        return json.dumps({'techniques': techniques})
+        return json.dumps({"techniques": techniques})
     except urllib.error.HTTPError as exc:
-        return json.dumps({'error': f'GitLab API returned HTTP {exc.code}: {exc.reason}'})
+        return json.dumps(
+            {"error": f"GitLab API returned HTTP {exc.code}: {exc.reason}"}
+        )
     except urllib.error.URLError as exc:
-        return json.dumps({'error': f'Failed to connect to GitLab API: {exc.reason}'})
+        return json.dumps({"error": f"Failed to connect to GitLab API: {exc.reason}"})
     except TimeoutError:
-        return json.dumps({'error': 'GitLab API request timed out'})
+        return json.dumps({"error": "GitLab API request timed out"})
     except json.JSONDecodeError:
-        return json.dumps({'error': 'GitLab API returned invalid JSON'})
+        return json.dumps({"error": "GitLab API returned invalid JSON"})
     except Exception as exc:
-        return json.dumps({'error': f'Unexpected error: {exc}'})
+        return json.dumps({"error": f"Unexpected error: {exc}"})
 
 
 @mcp.tool()
@@ -285,13 +291,13 @@ def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
     """
     result = validate_asm_document(asm_document_path, asm_schema_path)
     d = asdict(result)
-    if d['error_message'] is None:
-        del d['error_message']
+    if d["error_message"] is None:
+        del d["error_message"]
     return json.dumps(d)
 
 
 @mcp.tool()
-def get_asm_schema(id: str, output_dir: str = '') -> str:
+def get_asm_schema(id: str, output_dir: str = "") -> str:
     """Download and resolve an Allotrope ASM JSON schema.
 
     Downloads the schema identified by ``id`` from the official Allotrope PURL
@@ -312,40 +318,34 @@ def get_asm_schema(id: str, output_dir: str = '') -> str:
     """
     try:
         normalized_path = _normalize_schema_id(id)
-        filename = normalized_path.rsplit('/', 1)[-1]
+        filename = normalized_path.rsplit("/", 1)[-1]
         embed_filename = _generate_embed_filename(filename)
 
         base_dir = output_dir if output_dir else os.getcwd()
-        dir_part = normalized_path.rsplit('/', 1)[0] if '/' in normalized_path else ''
+        dir_part = normalized_path.rsplit("/", 1)[0] if "/" in normalized_path else ""
         absolute_path = Path(base_dir) / dir_part / embed_filename
         absolute_path = absolute_path.resolve()
 
         if absolute_path.exists():
-            return json.dumps({'path': str(absolute_path)})
+            return json.dumps({"path": str(absolute_path)})
 
-        uri = f'{_PURL_PREFIX}{normalized_path}'
+        uri = f"{PURL_PREFIX}{normalized_path}"
 
         try:
-            req = urllib.request.Request(uri, method='GET')
-            with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT_SECONDS) as resp:
-                body = resp.read().decode('utf-8')
+            req = urllib.request.Request(uri, method="GET")
+            with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
+                body = resp.read().decode("utf-8")
         except urllib.error.HTTPError as exc:
-            return json.dumps(
-                {'error': f'Failed to download {uri}: HTTP {exc.code}'}
-            )
+            return json.dumps({"error": f"Failed to download {uri}: HTTP {exc.code}"})
         except urllib.error.URLError as exc:
-            return json.dumps(
-                {'error': f'Failed to connect to {uri}: {exc.reason}'}
-            )
+            return json.dumps({"error": f"Failed to connect to {uri}: {exc.reason}"})
         except TimeoutError:
-            return json.dumps({'error': f'Request timed out for {uri}'})
+            return json.dumps({"error": f"Request timed out for {uri}"})
 
         try:
             schema = json.loads(body)
         except json.JSONDecodeError:
-            return json.dumps(
-                {'error': f'Invalid JSON received from {uri}'}
-            )
+            return json.dumps({"error": f"Invalid JSON received from {uri}"})
 
         try:
 
@@ -377,51 +377,47 @@ def get_asm_schema(id: str, output_dir: str = '') -> str:
             ref_uri = exc.uri
             if isinstance(cause, urllib.error.HTTPError):
                 return json.dumps(
-                    {'error': f'Failed to resolve $ref {ref_uri}: HTTP {cause.code}'}
+                    {"error": f"Failed to resolve $ref {ref_uri}: HTTP {cause.code}"}
                 )
             if isinstance(cause, urllib.error.URLError):
                 return json.dumps(
-                    {'error': f'Failed to resolve $ref {ref_uri}: {cause.reason}'}
+                    {"error": f"Failed to resolve $ref {ref_uri}: {cause.reason}"}
                 )
             if isinstance(cause, TimeoutError):
                 return json.dumps(
-                    {
-                        'error': (
-                            f'Request timed out while resolving $ref {ref_uri}'
-                        )
-                    }
+                    {"error": (f"Request timed out while resolving $ref {ref_uri}")}
                 )
             if isinstance(cause, json.JSONDecodeError):
                 return json.dumps(
                     {
-                        'error': (
-                            f'Invalid JSON encountered while resolving'
-                            f' $ref {ref_uri}'
+                        "error": (
+                            f"Invalid JSON encountered while resolving"
+                            f" $ref {ref_uri}"
                         )
                     }
                 )
-            return json.dumps({'error': f'Failed to resolve $ref {ref_uri}: {exc}'})
+            return json.dumps({"error": f"Failed to resolve $ref {ref_uri}: {exc}"})
 
         try:
             os.makedirs(absolute_path.parent, exist_ok=True)
-            with open(absolute_path, 'w') as f:
+            with open(absolute_path, "w") as f:
                 json.dump(resolved, f, indent=2)
         except OSError as exc:
             return json.dumps(
-                {'error': f'Failed to write schema to {absolute_path}: {exc}'}
+                {"error": f"Failed to write schema to {absolute_path}: {exc}"}
             )
 
-        return json.dumps({'path': str(absolute_path)})
+        return json.dumps({"path": str(absolute_path)})
 
     except Exception as exc:
-        return json.dumps({'error': str(exc)})
+        return json.dumps({"error": str(exc)})
 
 
 def main():
     """Run the MCP server with CLI argument support."""
-    logger.info('Starting allotrope MCP server')
+    logger.info("Starting allotrope MCP server")
     mcp.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

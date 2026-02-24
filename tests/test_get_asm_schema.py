@@ -666,7 +666,7 @@ class TestNormalizeSchemaId:
         uri = 'http://purl.allotrope.org/json-schemas/adm/conductivity/BENCHMARKS/conductivity.schema'
         assert _normalize_schema_id(uri) == 'json-schemas/adm/conductivity/BENCHMARKS/conductivity.schema'
 
-    def test_json_schemas_prefix(self) -> None:
+    def testJSON_SCHEMAS_PREFIX(self) -> None:
         """Path already starting with json-schemas/ is returned as-is."""
         path = 'json-schemas/adm/conductivity/BENCHMARKS/conductivity.schema'
         assert _normalize_schema_id(path) == path
