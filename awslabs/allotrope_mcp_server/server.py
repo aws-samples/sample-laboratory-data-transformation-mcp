@@ -413,6 +413,54 @@ def get_asm_schema(id: str, output_dir: str = "") -> str:
         return json.dumps({"error": str(exc)})
 
 
+@mcp.tool()
+async def list_asms() -> str:
+    """List all available Allotrope Simple Models (ASMs).
+
+    Retrieves ASM identifiers and descriptions from the local
+    model_reference.json file bundled with the package.
+
+    Returns:
+        JSON string with ASM IDs mapped to descriptions, or an
+        error key with a description on failure.
+    """
+    try:
+        # Locate model_reference.json in package directory
+        package_dir = Path(__file__).parent
+        model_ref_path = package_dir / 'model_reference.json'
+
+        # Read file
+        try:
+            with open(model_ref_path) as f:
+                content = f.read()
+        except FileNotFoundError:
+            logger.error(f'Model reference file not found: {model_ref_path}')
+            return json.dumps({'error': f'Model reference file not found: {model_ref_path}'})
+
+        # Parse JSON
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            logger.error(f'Model reference file contains malformed JSON: {model_ref_path}')
+            return json.dumps(
+                {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
+            )
+
+        # Extract ASM mappings
+        asms = {}
+        for asm_id, asm_data in data.items():
+            if 'description' not in asm_data:
+                logger.error(f"ASM '{asm_id}' missing description field")
+                return json.dumps({'error': f"ASM '{asm_id}' missing description field"})
+            asms[asm_id] = asm_data['description']
+
+        return json.dumps(asms)
+
+    except Exception as exc:
+        logger.error(f'Unexpected error in list_asms: {exc}')
+        return json.dumps({'error': f'Unexpected error: {exc}'})
+
+
 def main():
     """Run the MCP server with CLI argument support."""
     logger.info("Starting allotrope MCP server")
