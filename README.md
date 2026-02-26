@@ -11,6 +11,7 @@ A Model Context Protocol (MCP) server that provides tools for working with Allot
 This MCP server provides the following tools:
 
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from the bundled reference file
+- **describe_asm**: Retrieve full metadata for a specific ASM model by name, including its description, manifest URL, JSON schema URL, and data instance example URLs
 - **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
 - **get_asm_schema**: Download and resolve Allotrope ASM JSON schemas with all `$ref` references embedded inline for offline use
 
@@ -90,6 +91,7 @@ The server will automatically connect when you restart Kiro, or you can manually
 Once configured in Kiro, you can use natural language to interact with the tools:
 
 - "List all available ASMs"
+- "Describe the absorbance ASM model"
 - "Validate this ASM document against the plate reader schema"
 - "Check if my instrument data file is valid ASM format"
 - "Download the plate reader ASM schema and resolve all references"
@@ -120,6 +122,29 @@ Lists all available Allotrope Simple Models (ASMs) with their descriptions. Read
 **Parameters:** None
 
 **Returns:** A JSON object mapping ASM identifiers to their descriptions, or an `error` key on failure.
+
+### describe_asm
+
+Returns the full metadata for a specific ASM model by name. Looks up the model in the bundled `model_reference.json` and returns its description, manifest URL, JSON schema URL, and data instance example URLs as a JSON string.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model_name` | string | Yes | The ASM model identifier to look up (e.g., `"absorbance"`, `"balance"`). Use `list_asms` to discover valid names. |
+
+**Returns:** A JSON object with the model metadata on success, or an object with an `error` key and a `valid_model_names` list if the model name is not recognised.
+
+**Example response (success):**
+
+```json
+{
+  "description": "...",
+  "asm_manifest": "http://purl.allotrope.org/manifests/...",
+  "asm_json_schema": "http://purl.allotrope.org/json-schemas/...",
+  "asm_data_instance_examples": ["http://purl.allotrope.org/test/..."]
+}
+```
 
 ### get_asm_schema
 

@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Property-based tests for validate_asm_document."""
+"""Property-based tests for validate_asm_document and describe_asm."""
 
 import json
 import tempfile
-from awslabs.allotrope_mcp_server.server import validate_asm_document
+from awslabs.allotrope_mcp_server.server import describe_asm, validate_asm_document
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from pathlib import Path
+
+# Load MODEL_REFERENCE once at module level for use in describe_asm property tests.
+_model_ref_path = Path(__file__).parent.parent / 'awslabs' / 'allotrope_mcp_server' / 'model_reference.json'
+with open(_model_ref_path) as _f:
+    MODEL_REFERENCE: dict = json.load(_f)
 
 
 # A simple test schema: object with a required string "name" and integer "age".
@@ -184,3 +189,53 @@ def test_malformed_schema_json_returns_schema_specific_error(bad_json: str) -> N
     finally:
         Path(doc_path).unlink(missing_ok=True)
         Path(schema_path).unlink(missing_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# describe_asm property tests
+# ---------------------------------------------------------------------------
+
+
+# Feature: describe-asm, Property 1: Metadata round-trip
+# Validates: Requirements 1.2, 3.1, 3.2
+@given(model_name=st.sampled_from(list(MODEL_REFERENCE.keys())))
+@settings(max_examples=100)
+async def test_describe_asm_round_trip(model_name: str) -> None:
+    """Property 1: Metadata round-trip — parsed response equals original MODEL_REFERENCE entry."""
+    result = await describe_asm(model_name)
+    parsed = json.loads(result)
+    assert parsed == MODEL_REFERENCE[model_name], (
+        f'Round-trip mismatch for {model_name!r}: got {parsed!r}'
+    )
+
+
+# Feature: describe-asm, Property 2: Required fields present in response
+# Validates: Requirements 1.4
+@given(model_name=st.sampled_from(list(MODEL_REFERENCE.keys())))
+@settings(max_examples=100)
+async def test_describe_asm_required_fields(model_name: str) -> None:
+    """Property 2: Required fields present — all four metadata fields exist in the response."""
+    result = await describe_asm(model_name)
+    parsed = json.loads(result)
+    for field in ('description', 'asm_manifest', 'asm_json_schema', 'asm_data_instance_examples'):
+        assert field in parsed, f'Missing field {field!r} for model {model_name!r}'
+
+
+# Feature: describe-asm, Property 3: Invalid model name error response
+# Validates: Requirements 2.1, 2.2
+@given(model_name=st.text().filter(lambda s: s not in MODEL_REFERENCE))
+@settings(max_examples=100)
+async def test_describe_asm_invalid_name_error(model_name: str) -> None:
+    """Property 3: Invalid model name error response — error contains name and valid_model_names."""
+    result = await describe_asm(model_name)
+    parsed = json.loads(result)
+    assert 'error' in parsed, f'Expected "error" key for invalid name {model_name!r}'
+    assert model_name in parsed['error'], (
+        f'Error message does not contain {model_name!r}: {parsed["error"]!r}'
+    )
+    assert 'valid_model_names' in parsed, (
+        f'Expected "valid_model_names" key for invalid name {model_name!r}'
+    )
+    assert parsed['valid_model_names'] == sorted(MODEL_REFERENCE.keys()), (
+        f'valid_model_names mismatch for {model_name!r}'
+    )

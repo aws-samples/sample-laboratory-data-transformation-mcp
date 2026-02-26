@@ -313,6 +313,28 @@ def get_asm_schema(id: str, output_dir: str = '') -> str:
         return json.dumps({'error': str(exc)})
 
 
+def _load_model_reference() -> dict | None:
+    """Load and parse model_reference.json bundled with the package.
+
+    Returns:
+        Parsed dict on success, or None if the file is missing or malformed.
+    """
+    model_ref_path = Path(__file__).parent / 'model_reference.json'
+
+    try:
+        with open(model_ref_path) as f:
+            content = f.read()
+    except FileNotFoundError:
+        logger.error(f'Model reference file not found: {model_ref_path}')
+        return None
+
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        logger.error(f'Model reference file contains malformed JSON: {model_ref_path}')
+        return None
+
+
 @mcp.tool()
 async def list_asms() -> str:
     """List all available Allotrope Simple Models (ASMs).
@@ -325,26 +347,21 @@ async def list_asms() -> str:
         error key with a description on failure.
     """
     try:
-        # Locate model_reference.json in package directory
-        package_dir = Path(__file__).parent
-        model_ref_path = package_dir / 'model_reference.json'
+        model_ref_path = Path(__file__).parent / 'model_reference.json'
 
-        # Read file
-        try:
-            with open(model_ref_path) as f:
-                content = f.read()
-        except FileNotFoundError:
-            logger.error(f'Model reference file not found: {model_ref_path}')
-            return json.dumps({'error': f'Model reference file not found: {model_ref_path}'})
-
-        # Parse JSON
-        try:
-            data = json.loads(content)
-        except json.JSONDecodeError:
-            logger.error(f'Model reference file contains malformed JSON: {model_ref_path}')
-            return json.dumps(
-                {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
-            )
+        data = _load_model_reference()
+        if data is None:
+            try:
+                with open(model_ref_path) as f:
+                    f.read()
+                # File opened fine — must be malformed JSON
+                return json.dumps(
+                    {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
+                )
+            except FileNotFoundError:
+                return json.dumps(
+                    {'error': f'Model reference file not found: {model_ref_path}'}
+                )
 
         # Extract ASM mappings
         asms = {}
@@ -358,6 +375,50 @@ async def list_asms() -> str:
 
     except Exception as exc:
         logger.error(f'Unexpected error in list_asms: {exc}')
+        return json.dumps({'error': f'Unexpected error: {exc}'})
+
+
+@mcp.tool()
+async def describe_asm(model_name: str) -> str:
+    """Return the metadata for a specific ASM model by name.
+
+    Args:
+        model_name: The key identifying the ASM model (e.g. 'absorbance').
+
+    Returns:
+        JSON string containing the model metadata on success, or an error object
+        with the unrecognized name and a list of valid model names on failure.
+    """
+    try:
+        reference = _load_model_reference()
+        if reference is None:
+            model_ref_path = Path(__file__).parent / 'model_reference.json'
+            try:
+                with open(model_ref_path) as f:
+                    f.read()
+                return json.dumps(
+                    {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
+                )
+            except FileNotFoundError:
+                return json.dumps(
+                    {'error': f'Model reference file not found: {model_ref_path}'}
+                )
+
+        if model_name in reference:
+            return json.dumps(reference[model_name])
+
+        return json.dumps(
+            {
+                'error': (
+                    f"Unknown model name: '{model_name}'."
+                    ' See valid_model_names for available options.'
+                ),
+                'valid_model_names': sorted(reference.keys()),
+            }
+        )
+
+    except Exception as exc:
+        logger.error(f'Unexpected error in describe_asm: {exc}')
         return json.dumps({'error': f'Unexpected error: {exc}'})
 
 
