@@ -1,58 +1,54 @@
 [project]
 name = "awslabs.allotrope-mcp-server"
-
 # NOTE: "Patch"=9223372036854775807 bumps next release to zero.
 version = "0.0.0"
-
 description = "An AWS Labs Model Context Protocol (MCP) server for allotrope"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "jsonref>=1.0.0",
-    "jsonschema>=4.23.0",
-    "loguru>=0.7.0",
-    "mcp[cli]>=1.6.0",
-    "pydantic>=2.10.6",
+  "jsonschema>=4.23.0",
+  "mcp[cli]>=1.6.0",
+  "pydantic>=2.10.6",
 ]
-license = {text = "Apache-2.0"}
-license-files = ["LICENSE", "NOTICE" ]
+license = { text = "Apache-2.0" }
+license-files = ["LICENSE", "NOTICE"]
 authors = [
-    {name = "Amazon Web Services"},
-    {name = "AWSLabs MCP", email="203918161+awslabs-mcp@users.noreply.github.com"},
-    {name = "Brian Loyal", email="bloyal@amazon.com"},
+  { name = "Amazon Web Services" },
+  { name = "AWSLabs MCP", email = "203918161+awslabs-mcp@users.noreply.github.com" },
+  { name = "Brian Loyal", email = "bloyal@amazon.com" },
 ]
 classifiers = [
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 
 [project.urls]
-homepage = "https://awslabs.github.io/mcp/"
+changelog = "https://github.com/awslabs/mcp/blob/main/src/allotrope-mcp-server/CHANGELOG.md"
 docs = "https://awslabs.github.io/mcp/servers/allotrope-mcp-server/"
 documentation = "https://awslabs.github.io/mcp/servers/allotrope-mcp-server/"
+homepage = "https://awslabs.github.io/mcp/"
 repository = "https://github.com/awslabs/mcp.git"
-changelog = "https://github.com/awslabs/mcp/blob/main/src/allotrope-mcp-server/CHANGELOG.md"
 
 [project.scripts]
 "awslabs.allotrope-mcp-server" = "awslabs.allotrope_mcp_server.server:main"
 
 [dependency-groups]
 dev = [
-    "commitizen>=4.2.2",
-    "hypothesis>=6.100.0",
-    "pre-commit>=4.1.0",
-    "ruff>=0.9.7",
-    "pyright>=1.1.398",
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.26.0",
-    "pytest-cov>=4.1.0",
-    "pytest-mock>=3.12.0",
+  "commitizen>=4.2.2",
+  "hypothesis>=6.100.0",
+  "pre-commit>=4.1.0",
+  "pyright>=1.1.398",
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.26.0",
+  "pytest-cov>=4.1.0",
+  "pytest-mock>=3.12.0",
+  "ruff>=0.9.7",
 ]
 
 [build-system]
@@ -66,15 +62,15 @@ allow-direct-references = true
 line-length = 99
 extend-include = ["*.ipynb"]
 exclude = [
-    ".venv",
-    "**/__pycache__",
-    "**/node_modules",
-    "**/dist",
-    "**/build",
-    "**/env",
-    "**/.ruff_cache",
-    "**/.venv",
-    "**/.ipynb_checkpoints"
+  ".venv",
+  "**/__pycache__",
+  "**/node_modules",
+  "**/dist",
+  "**/build",
+  "**/env",
+  "**/.ruff_cache",
+  "**/.venv",
+  "**/.ipynb_checkpoints"
 ]
 force-exclude = true
 
@@ -102,15 +98,21 @@ docstring-code-format = true
 
 [tool.pyright]
 include = ["awslabs", "tests"]
-exclude = ["**/__pycache__", "**/.venv", "**/node_modules", "**/dist", "**/build"]
+exclude = [
+  "**/__pycache__",
+  "**/.venv",
+  "**/node_modules",
+  "**/dist",
+  "**/build"
+]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.0.0"
 tag_format = "v$version"
 version_files = [
-    "pyproject.toml:version",
-    "awslabs/allotrope_mcp_server/__init__.py:__version__"
+  "pyproject.toml:version",
+  "awslabs/allotrope_mcp_server/__init__.py:__version__"
 ]
 update_changelog_on_bump = true
 
@@ -124,17 +126,17 @@ exclude_dirs = ["venv", ".venv", "tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-testpaths = [ "tests"]
+testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
-    "live: marks tests that make live API calls (deselect with '-m \"not live\"')",
-    "asyncio: marks tests that use asyncio"
+  "live: marks tests that make live API calls (deselect with '-m \"not live\"')",
+  "asyncio: marks tests that use asyncio"
 ]
 
 [tool.coverage.report]
 exclude_also = [
-    'pragma: no cover',
-    'if __name__ == .__main__.:\n    main()',
+  "pragma: no cover",
+  'if __name__ == .__main__.:\n    main()',
 ]
 
 [tool.coverage.run]

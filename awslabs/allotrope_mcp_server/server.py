@@ -21,30 +21,28 @@ import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass, field
 from jsonschema import Draft202012Validator
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 
 
-
 HTTP_TIMEOUT_SECONDS = 30
 
-PURL_ORIGIN = 'http://purl.allotrope.org'
+PURL_ORIGIN = "http://purl.allotrope.org"
 
 mcp = FastMCP(
-    'awslabs.allotrope-mcp-server',
+    "awslabs.allotrope-mcp-server",
     instructions=(
-        'This MCP server provides tools to convert instrument data files into'
-        ' standardized Allotrope Simple Model (ASM) format.'
+        "This MCP server provides tools to convert instrument data files into"
+        " standardized Allotrope Simple Model (ASM) format."
     ),
     dependencies=[
-        'jsonschema',
-        'loguru',
-        'pydantic',
+        "jsonschema",
+        "pydantic",
     ],
 )
-
-
 
 
 @dataclass
@@ -78,7 +76,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except FileNotFoundError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Document file not found: {document_path}',
+            error_message=f"Document file not found: {document_path}",
         )
 
     try:
@@ -86,7 +84,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except json.JSONDecodeError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Document file contains malformed JSON: {document_path}',
+            error_message=f"Document file contains malformed JSON: {document_path}",
         )
 
     # Read schema
@@ -96,7 +94,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except FileNotFoundError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Schema file not found: {schema_path}',
+            error_message=f"Schema file not found: {schema_path}",
         )
 
     try:
@@ -104,23 +102,23 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     except json.JSONDecodeError:
         return ValidationResult(
             is_valid=False,
-            error_message=f'Schema file contains malformed JSON: {schema_path}',
+            error_message=f"Schema file contains malformed JSON: {schema_path}",
         )
 
     # Validate
     validator = Draft202012Validator(schema)
     errors = [
         ValidationError(
-            path='.'.join(str(p) for p in err.absolute_path) or '(root)',
+            path=".".join(str(p) for p in err.absolute_path) or "(root)",
             message=err.message,
             validator=err.validator,
         )
-        for err in sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
+        for err in sorted(
+            validator.iter_errors(document), key=lambda e: list(e.absolute_path)
+        )
     ]
 
     return ValidationResult(is_valid=len(errors) == 0, errors=errors)
-
-
 
 
 @mcp.tool()
@@ -136,13 +134,13 @@ def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
     """
     result = validate_asm_document(asm_document_path, asm_schema_path)
     d = asdict(result)
-    if d['error_message'] is None:
-        del d['error_message']
+    if d["error_message"] is None:
+        del d["error_message"]
     return json.dumps(d)
 
 
 @mcp.tool()
-async def fetch_asm_document(asm_document_uri: str, output_dir: str = '') -> str:
+async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str:
     """Fetch a raw ASM JSON document from purl.allotrope.org.
 
     Downloads the document identified by ``asm_document_uri`` from the Allotrope
@@ -163,45 +161,59 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = '') -> str
     """
     try:
         if not asm_document_uri.startswith(PURL_ORIGIN):
-            return json.dumps({'error': f'Invalid URI: {asm_document_uri!r} must start with {PURL_ORIGIN!r}'})
+            return json.dumps(
+                {
+                    "error": f"Invalid URI: {asm_document_uri!r} must start with {PURL_ORIGIN!r}"
+                }
+            )
 
         base_dir = output_dir if output_dir else os.getcwd()
-        mirror_path = asm_document_uri[len(PURL_ORIGIN):].lstrip('/')
+        mirror_path = asm_document_uri[len(PURL_ORIGIN) :].lstrip("/")
         dest = Path(base_dir) / mirror_path
 
         if dest.exists():
-            return json.dumps({'path': str(dest.resolve())})
+            return json.dumps({"path": str(dest.resolve())})
 
         # Downloader
         loop = asyncio.get_event_loop()
         try:
+
             def _fetch() -> bytes:
-                with urllib.request.urlopen(asm_document_uri, timeout=HTTP_TIMEOUT_SECONDS) as resp:
+                with urllib.request.urlopen(
+                    asm_document_uri, timeout=HTTP_TIMEOUT_SECONDS
+                ) as resp:
                     return resp.read()
+
             body = await loop.run_in_executor(None, _fetch)
         except urllib.error.HTTPError as exc:
-            return json.dumps({'error': f'Failed to download {asm_document_uri}: HTTP {exc.code}'})
+            return json.dumps(
+                {"error": f"Failed to download {asm_document_uri}: HTTP {exc.code}"}
+            )
         except urllib.error.URLError as exc:
-            return json.dumps({'error': f'Failed to connect to {asm_document_uri}: {exc.reason}'})
+            return json.dumps(
+                {"error": f"Failed to connect to {asm_document_uri}: {exc.reason}"}
+            )
         except TimeoutError:
-            return json.dumps({'error': f'Request timed out for {asm_document_uri}'})
+            return json.dumps({"error": f"Request timed out for {asm_document_uri}"})
 
         try:
             data = json.loads(body)
         except json.JSONDecodeError:
-            return json.dumps({'error': f'Invalid JSON received from {asm_document_uri}'})
+            return json.dumps(
+                {"error": f"Invalid JSON received from {asm_document_uri}"}
+            )
 
         # Writer
         try:
             dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(json.dumps(data, indent=2), encoding='utf-8')
+            dest.write_text(json.dumps(data, indent=2), encoding="utf-8")
         except OSError as exc:
-            return json.dumps({'error': f'Failed to write document to {dest}: {exc}'})
+            return json.dumps({"error": f"Failed to write document to {dest}: {exc}"})
 
-        return json.dumps({'path': str(dest.resolve())})
+        return json.dumps({"path": str(dest.resolve())})
 
     except Exception as exc:
-        return json.dumps({'error': str(exc)})
+        return json.dumps({"error": str(exc)})
 
 
 def _load_model_reference() -> dict | None:
@@ -210,19 +222,19 @@ def _load_model_reference() -> dict | None:
     Returns:
         Parsed dict on success, or None if the file is missing or malformed.
     """
-    model_ref_path = Path(__file__).parent / 'model_reference.json'
+    model_ref_path = Path(__file__).parent / "model_reference.json"
 
     try:
         with open(model_ref_path) as f:
             content = f.read()
     except FileNotFoundError:
-        logger.error(f'Model reference file not found: {model_ref_path}')
+        logger.error(f"Model reference file not found: {model_ref_path}")
         return None
 
     try:
         return json.loads(content)
     except json.JSONDecodeError:
-        logger.error(f'Model reference file contains malformed JSON: {model_ref_path}')
+        logger.error(f"Model reference file contains malformed JSON: {model_ref_path}")
         return None
 
 
@@ -238,7 +250,7 @@ async def list_asms() -> str:
         error key with a description on failure.
     """
     try:
-        model_ref_path = Path(__file__).parent / 'model_reference.json'
+        model_ref_path = Path(__file__).parent / "model_reference.json"
 
         data = _load_model_reference()
         if data is None:
@@ -247,26 +259,30 @@ async def list_asms() -> str:
                     f.read()
                 # File opened fine — must be malformed JSON
                 return json.dumps(
-                    {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
+                    {
+                        "error": f"Model reference file contains malformed JSON: {model_ref_path}"
+                    }
                 )
             except FileNotFoundError:
                 return json.dumps(
-                    {'error': f'Model reference file not found: {model_ref_path}'}
+                    {"error": f"Model reference file not found: {model_ref_path}"}
                 )
 
         # Extract ASM mappings
         asms = {}
         for asm_id, asm_data in data.items():
-            if 'description' not in asm_data:
+            if "description" not in asm_data:
                 logger.error(f"ASM '{asm_id}' missing description field")
-                return json.dumps({'error': f"ASM '{asm_id}' missing description field"})
-            asms[asm_id] = asm_data['description']
+                return json.dumps(
+                    {"error": f"ASM '{asm_id}' missing description field"}
+                )
+            asms[asm_id] = asm_data["description"]
 
         return json.dumps(asms)
 
     except Exception as exc:
-        logger.error(f'Unexpected error in list_asms: {exc}')
-        return json.dumps({'error': f'Unexpected error: {exc}'})
+        logger.error(f"Unexpected error in list_asms: {exc}")
+        return json.dumps({"error": f"Unexpected error: {exc}"})
 
 
 @mcp.tool()
@@ -283,16 +299,18 @@ async def describe_asm(model_name: str) -> str:
     try:
         reference = _load_model_reference()
         if reference is None:
-            model_ref_path = Path(__file__).parent / 'model_reference.json'
+            model_ref_path = Path(__file__).parent / "model_reference.json"
             try:
                 with open(model_ref_path) as f:
                     f.read()
                 return json.dumps(
-                    {'error': f'Model reference file contains malformed JSON: {model_ref_path}'}
+                    {
+                        "error": f"Model reference file contains malformed JSON: {model_ref_path}"
+                    }
                 )
             except FileNotFoundError:
                 return json.dumps(
-                    {'error': f'Model reference file not found: {model_ref_path}'}
+                    {"error": f"Model reference file not found: {model_ref_path}"}
                 )
 
         if model_name in reference:
@@ -300,24 +318,24 @@ async def describe_asm(model_name: str) -> str:
 
         return json.dumps(
             {
-                'error': (
+                "error": (
                     f"Unknown model name: '{model_name}'."
-                    ' See valid_model_names for available options.'
+                    " See valid_model_names for available options."
                 ),
-                'valid_model_names': sorted(reference.keys()),
+                "valid_model_names": sorted(reference.keys()),
             }
         )
 
     except Exception as exc:
-        logger.error(f'Unexpected error in describe_asm: {exc}')
-        return json.dumps({'error': f'Unexpected error: {exc}'})
+        logger.error(f"Unexpected error in describe_asm: {exc}")
+        return json.dumps({"error": f"Unexpected error: {exc}"})
 
 
 def main():
     """Run the MCP server with CLI argument support."""
-    logger.info('Starting allotrope MCP server')
+    logger.info("Starting allotrope MCP server")
     mcp.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
