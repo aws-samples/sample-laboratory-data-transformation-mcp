@@ -10,6 +10,7 @@ A Model Context Protocol (MCP) server that provides tools for working with Allot
 
 This MCP server provides the following tools:
 
+- **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from the bundled reference file
 - **list_asm_techniques**: Discover all available ASM technique types from the official Allotrope GitLab repository
 - **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
 - **get_asm_schema**: Download and resolve Allotrope ASM JSON schemas with all `$ref` references embedded inline for offline use
@@ -89,6 +90,7 @@ The server will automatically connect when you restart Kiro, or you can manually
 
 Once configured in Kiro, you can use natural language to interact with the tools:
 
+- "List all available ASMs"
 - "List all available ASM techniques"
 - "Validate this ASM document against the plate reader schema"
 - "Check if my instrument data file is valid ASM format"
@@ -112,6 +114,14 @@ You: Download the conductivity ASM schema to my project
 Kiro will use the `get_asm_schema` tool to download the schema, resolve all `$ref` references inline, and save the self-contained schema locally.
 
 ## Tool Reference
+
+### list_asms
+
+Lists all available Allotrope Simple Models (ASMs) with their descriptions. Reads from the bundled `model_reference.json` file and returns a mapping of ASM IDs to descriptions.
+
+**Parameters:** None
+
+**Returns:** A JSON object mapping ASM identifiers to their descriptions, or an `error` key on failure.
 
 ### get_asm_schema
 

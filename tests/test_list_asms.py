@@ -206,7 +206,9 @@ class TestListAsmsProperties:
             )
 
     @given(
-        scenario=st.sampled_from(['success', 'file_not_found', 'malformed_json', 'missing_description'])
+        scenario=st.sampled_from(
+            ['success', 'file_not_found', 'malformed_json', 'missing_description']
+        )
     )
     @settings(max_examples=100)
     async def test_valid_json_response(self, scenario):
