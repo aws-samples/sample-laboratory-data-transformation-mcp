@@ -1,0 +1,497 @@
+{
+    "absorbance": {
+        "description": "Absorbance is the logarithm of the ratio of intensities of electromagnetic radiation on both sides of a medium that the radiation passes through. This model has been deprecated in favor of the plate-reader model.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/absorbance/REC/2025/12/absorbance.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance.json",
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance-profile.json",
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance-area-scan.json"
+        ]
+    },
+    "automated-reactors": {
+        "description": "An automated reactor is a device that performs chemical reactions with automated control and monitoring capabilities.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/automated-reactors/REC/2025/12/automated-reactors.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/automated-reactors/REC/2025/12/automated-reactors.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/automated-reactors/REC/2025/12/automated-reactors.json"
+        ]
+    },
+    "balance": {
+        "description": "A balance is a weighing device, intended predominantly for medium to low capacity weighments, with moderate to high resolutions, mostly used indoors. This model has been deprecated in favor of the solution-analyzer model",
+        "asm_manifest": "http://purl.allotrope.org/manifests/balance/REC/2025/12/balance.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/balance/REC/2025/12/balance.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/balance/REC/2025/12/balance.json"
+        ]
+    },
+    "bga": {
+        "description": "Blood gas analysis is the process of analyzing amount of dissolved gases in a blood sample.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/bga/REC/2021/12/bga.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/bga/REC/2021/12/bga.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/bga/REC/2021/12/bga.json"
+        ]
+    },
+    "binding-affinity": {
+        "description": "A binding affinity assay is a biological measurement method examining the binding of ligand molecules to some medium.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/binding-affinity/REC/2025/12/binding-affinity.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/binding-affinity/REC/2025/12/binding-affinity.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/binding-affinity/REC/2025/12/binding-affinity.json"
+        ]
+    },
+    "bulk-density": {
+        "description": "A densitometry of bulk material that includes the contribution of the interparticulate void volume.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/bulk-density/REC/2021/12/bulk-density.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/bulk-density/REC/2021/12/bulk-density.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/bulk-density/REC/2021/12/bulk-density.json"
+        ]
+    },
+    "cell-counting": {
+        "description": "Cell counter assay is a cellular assay that uses various methods to quantify cells in a culture.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/cell-counting/REC/2025/12/cell-counting.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/cell-counting/REC/2025/12/cell-counting.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/cell-counting/REC/2025/12/cell-counting.json"
+        ]
+    },
+    "cell-culture-analyzer": {
+        "description": "A cell culture analyzer is a device that measures and monitors parameters of cell cultures such as cell density, viability, and metabolite concentrations.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/cell-culture-analyzer/REC/2021/12/cell-culture-analyzer.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/cell-culture-analyzer/REC/2021/12/cell-culture-analyzer.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/cell-culture-analyzer/REC/2021/12/cell-culture-analyzer.json"
+        ]
+    },
+    "chromatography": {
+        "description": "A chromatography is a separation where the components are distributed between two phases, one of which is stationary, while the other moves in a definite direction.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/chromatography/REC/2024/12/chromatography-column.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/chromatography/REC/2025/12/chromatography-column.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/chromatography/REC/2025/12/chromatography-column.json"
+        ]
+    },
+    "code-reader": {
+        "description": "A barcode reader (or barcode scanner) is an electronic device for reading printed barcodes.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/code-reader/REC/2022/06/code-reader.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/code-reader/REC/2022/06/code-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/code-reader/REC/2022/06/code-reader.json"
+        ]
+    },
+    "conductivity": {
+        "description": "A physical quality inhering in a bearer by virtue of the bearer's disposition to transmit of an entity through a medium.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/conductivity/REC/2021/12/conductivity.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/conductivity/REC/2021/12/conductivity.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/conductivity/REC/2021/09/conductivity.json"
+        ]
+    },
+    "disintegration": {
+        "description": "A disintegration test is a test to check the time that an object needs to disintegrate.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/disintegration/REC/2021/12/disintegration.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/disintegration/REC/2021/12/disintegration.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/disintegration/REC/2021/12/disintegration.json"
+        ]
+    },
+    "dpcr": {
+        "description": "Digital PCR is a method for absolute quantification of nucleic acids that partitions a sample into thousands of microreactions, amplifies each partition separately, and uses Poisson statistics to provide precise, highly sensitive quantification without the need for standard curves or reference controls.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/pcr/REC/2025/12/dpcr.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/pcr/REC/2025/12/dpcr.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/pcr/REC/2025/12/dpcr.json"
+        ]
+    },
+    "dsc": {
+        "description": "Differential scanning calorimetry is a thermal analysis method in which the difference in energy inputs into a substance and a reference material is measured as a function of temperature whilst the substance and reference material are subjected to a controlled temperature program.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/dsc/REC/2021/12/differential-scanning-calorimetry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/dsc/REC/2021/12/differential-scanning-calorimetry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/dsc/REC/2021/12/differential-scanning-calorimetry.json"
+        ]
+    },
+    "dvs": {
+        "description": "Dynamic vapor sorption is a gravimetric technique that measures how quickly and how much of a solvent is absorbed by a sample.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/dvs/REC/2021/12/dvs.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/dvs/REC/2021/12/dvs.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/dvs/REC/2021/12/dvs.json"
+        ]
+    },
+    "electronic-lab-notebook": {
+        "description": "An electronic lab notebook system is a data system used in laboratories to record the execution and results of experiments.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/electronic-lab-notebook/REC/2025/12/electronic-lab-notebook.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/electronic-lab-notebook/REC/2025/12/electronic-lab-notebook.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/electronic-lab-notebook/REC/2025/12/eln.json"
+        ]
+    },
+    "electronic-spectrometry": {
+        "description": "Any spectroscopic method which probes the electronic degrees of freedom of an atom or molecule.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/electronic-spectrometry/REC/2025/12/electronic-spectrometry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/electronic-spectrometry/REC/2025/12/electronic-spectrometry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/electronic-spectrometry/REC/2025/12/electronic-spectrometry.json"
+        ]
+    },
+    "electrophoresis": {
+        "description": "An electrophoresis is a separation where colloidal particles move at different speeds according to their electrophoretic mobilities in a separation medium, across which an electric field is applied.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/electrophoresis/REC/2025/12/electrophoresis.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/electrophoresis/REC/2025/12/electrophoresis.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/electrophoresis/REC/2025/12/electrophoresis.json"
+        ]
+    },
+    "flow-cytometry": {
+        "description": "Flow cytometry is a measuring of the optical properties of particles suspended in fluid and passed one at a time through a set of detectors.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/flow-cytometry/REC/2025/12/flow-cytometry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/flow-cytometry/REC/2025/12/flow-cytometry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/flow-cytometry/REC/2025/12/flow-cytometry.json"
+        ]
+    },
+    "fluorescence": {
+        "description": "Fluorescence is the emission of light by a substance that has absorbed light or other electromagnetic radiation. This model has been deprecated in favor of the plate-reader model.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/fluorescence/REC/2025/12/fluorescence.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/12/fluorescence-endpoint.json",
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/12/fluorescence-profile.json",
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/12/fluorescence-area-scan.json"
+        ]
+    },
+    "foam-height": {
+        "description": "A foam height is a height of some foam.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/foam-height/REC/2025/12/foam-height.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/foam-height/REC/2025/12/foam-height.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/foam-height/REC/2025/12/foam-height.json"
+        ]
+    },
+    "foam-qualification": {
+        "description": "Foam qualification is a process of evaluating and characterizing the properties and behavior of foam materials.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/foam-qualification/REC/2025/12/foam-qualification.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/foam-qualification/REC/2025/12/foam-qualification.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/foam-qualification/REC/2025/12/foam-qualification.json"
+        ]
+    },
+    "fplc": {
+        "description": "Fast protein liquid chromatography is a form of liquid chromatography that is used to separate or purify proteins and other biomolecules.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/fplc/REC/2025/12/fplc.tabular.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/fplc/REC/2025/12/fplc.tabular.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/fplc/REC/2025/12/fplc.tabular.json"
+        ]
+    },
+    "ftir": {
+        "description": "Fourier transform infrared spectroscopy is a spectroscopy method where the sample is illuminated with infrared radiation and the absorption spectrum is obtained by Fourier transform of the interferogram.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/ftir/REC/2021/12/ftir.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/ftir/REC/2021/12/ftir.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/ftir/REC/2021/12/ftir.json"
+        ]
+    },
+    "gas-chromatography": {
+        "description": "Gas chromatography is column chromatography where the mobile phase is a gas.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/gas-chromatography/REC/2025/12/gas-chromatography.tabular.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/gas-chromatography/REC/2025/12/gas-chromatography.tabular.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/gas-chromatography/REC/2025/12/gas-chromatography.tabular.json"
+        ]
+    },
+    "gc-ms": {
+        "description": "Gas chromatography-mass spectrometry is a method where the sample is first separated by gas chromatography then analyzed by mass spectrometry.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/gc-ms/REC/2025/12/gc-ms.tabular.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/gc-ms/REC/2025/12/gc-ms.tabular.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/gc-ms/REC/2025/12/gc-ms.tabular.json"
+        ]
+    },
+    "gloss": {
+        "description": "Gloss is an optical property which indicates how well a surface reflects light in a specular (mirror-like) direction.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/gloss/REC/2025/12/gloss.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/gloss/REC/2025/12/gloss.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/gloss/REC/2025/12/gloss.json"
+        ]
+    },
+    "hot-tack": {
+        "description": "Hot tack testing is a measurement method that evaluates the strength of a heat seal while it is still hot, immediately after sealing.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/hot-tack/REC/2025/12/hot-tack.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/hot-tack/REC/2025/12/hot-tack.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/hot-tack/REC/2025/12/hot-tack.json"
+        ]
+    },
+    "lc-ms": {
+        "description": "Liquid chromatography-mass spectrometry is a method where the sample is first separated by liquid chromatography then analyzed by mass spectrometry.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/lc-ms/REC/2025/12/lc-ms.tabular.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/lc-ms/REC/2025/12/lc-ms.tabular.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/lc-ms/REC/2025/12/lc-ms.tabular.json"
+        ]
+    },
+    "light-obscuration": {
+        "description": "Light obscuration is a method for detecting and counting particles in a liquid by measuring the reduction in light intensity as particles pass through a light beam. This model has been deprecated in favor of the solution-analyzer model.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/light-obscuration/REC/2021/12/light-obscuration.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/light-obscuration/REC/2021/12/light-obscuration.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/light-obscuration/REC/2021/12/light-obscuration.json"
+        ]
+    },
+    "liquid-chromatography": {
+        "description": "Liquid chromatography is column chromatography where the mobile phase is a liquid.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/liquid-chromatography/REC/2025/12/liquid-chromatography.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/liquid-chromatography/REC/2025/12/liquid-chromatography.tabular.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/liquid-chromatography/REC/2025/12/liquid-chromatography.json"
+        ]
+    },
+    "loss-on-drying": {
+        "description": "Loss on drying is a measurement method that determines the amount of water and volatile substances in a sample by measuring the mass loss after drying under specified conditions.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/loss-on-drying/REC/2021/12/loss-on-drying.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/loss-on-drying/REC/2021/12/loss-on-drying.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/loss-on-drying/REC/2021/12/loss-on-drying.json"
+        ]
+    },
+    "luminescence": {
+        "description": "Luminescence is the spontaneous emission of radiation from an electronically or vibrationally excited species not in thermal equilibrium with its environment. This model has been deprecated in favor of the plate-reader model.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/luminescence/REC/2025/06/luminescence.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/06/plate-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-endpoint.json",
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-profile.json",
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-area-scan.json"
+        ]
+    },
+    "mass-spectrometry": {
+        "description": "Mass spectrometry is a spectrometry that studies matter through the formation of gas-phase ions that are characterized using mass spectrometers by their mass, charge, structure, and/or physico-chemical properties.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/mass-spectrometry/REC/2025/12/mass-spectrometry.tabular.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/mass-spectrometry/REC/2025/12/mass-spectrometry.tabular.embed.schema.json",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/mass-spectrometry/REC/2022/06/mass-spectrometry.tabular.json"
+        ]
+    },
+    "multi-analyte-profiling": {
+        "description": "Multi-analyte profiling is a measurement method that simultaneously quantifies multiple analytes in a sample using multiplexed detection techniques.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/multi-analyte-profiling/REC/2025/12/multi-analyte-profiling.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/multi-analyte-profiling/REC/2025/12/multi-analyte-profiling.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/multi-analyte-profiling/REC/2025/12/multi-analyte-profiling.json"
+        ]
+    },
+    "nephelometry": {
+        "description": "Nephelometry is a measuring of suspended particulates in a liquid or gas colloid usually by employing a light beam and a light detector set to one side of the source beam.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/nephelometry/REC/2021/12/nephelometry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/nephelometry/REC/2021/12/nephelometry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/nephelometry/REC/2021/12/nephelometry.json"
+        ]
+    },
+    "nmr": {
+        "description": "Nuclear magnetic resonance spectroscopy is a spectroscopy that exploits the magnetic properties of certain atomic nuclei to determine physical and chemical properties of atoms or molecules.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/nmr/REC/2025/12/solution-nmr.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/nmr/REC/2025/12/solution-nmr.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/nmr/REC/2025/12/solution-nmr.json"
+        ]
+    },
+    "optical-microscopy": {
+        "description": "Optical microscopy is a type of microscopy where the specimen is illuminated with visible light and a system of lenses is used to produce an image.",
+        "asm_manifest": "ttp://purl.allotrope.org/manifests/optical-microscopy/REC/2022/03/optical-microscopy.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/optical-microscopy/REC/2022/03/optical-microscopy.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/optical-microscopy/REC/2022/03/optical-microscopy.json"
+        ]
+    },
+    "osmolality": {
+        "description": "Osmolality is a concentration quality inhering in a bearer by virtue of the bearer's amount of osmoles of solute per kilogram of solvent.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/osmolality/REC/2025/12/osmolality.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/osmolality/REC/2025/12/osmolality.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/osmolality/REC/2025/12/osmolality.json"
+        ]
+    },
+    "oven-kf": {
+        "description": "Oven Karl Fischer is a method for determining water content where the sample is heated in an oven and the released water is transferred to a Karl Fischer titration cell for quantification.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/oven-kf/REC/2021/12/coulometric-oven-kf.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/oven-kf/REC/2021/12/coulometric-oven-kf.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/oven-kf/REC/2021/12/coulometric-oven-kf.json"
+        ]
+    },
+    "ph": {
+        "description": "pH is a quantity that quantifies the acidity or basicity of an aqueous solution, defined as the decadic logarithm of the reciprocal activity of hydrogen ions.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/ph/REC/2025/12/ph-sensor.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/ph/REC/2025/12/ph-sensor.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/ph/REC/2025/12/ph-point-sensor.json",
+            "http://purl.allotrope.org/test/adm/ph/REC/2025/12/ph-profile-sensor.json"
+        ]
+    },
+    "plate-reader": {
+        "description": "A plate reader is a laboratory instrument that detects biological, chemical or physical events in samples contained in microtiter plates by measuring absorbance, fluorescence, or luminescence.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/plate-reader/REC/2025/12/plate-reader.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance.json",
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance-profile.json",
+            "http://purl.allotrope.org/test/adm/absorbance/REC/2025/12/absorbance-area-scan.json",
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/06/fluorescence-endpoint.json",
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/06/fluorescence-profile.json",
+            "http://purl.allotrope.org/test/adm/fluorescence/REC/2025/06/fluorescence-area-scan.json",
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-endpoint.json",
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-profile.json",
+            "http://purl.allotrope.org/test/adm/luminescence/REC/2025/06/luminescence-area-scan.json"
+        ]
+    },
+    "pressure-monitoring": {
+        "description": "Pressure monitoring is an observing of pressure that is important for the successful and/or safe operation of a controlled process.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/pressure-monitoring/REC/2025/12/pressure-sensor.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/pressure-monitoring/REC/2025/12/pressure-sensor.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/pressure-monitoring/REC/2025/12/pressure-sensor.json"
+        ]
+    },
+    "pumping": {
+        "description": "Pumping is a material transport of fluids by suction or pressure or both.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/pumping/REC/2023/03/pumping.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/pumping/REC/2023/03/pumping.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/pumping/REC/2023/03/pump.json"
+        ]
+    },
+    "qpcr": {
+        "description": "Quantitative polymerase chain reaction (qPCR) is a quantitative analytical assay based on the polymerase chain reaction (PCR) that monitors the amplification of a targeted DNA molecule during the PCR.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/pcr/REC/2025/12/qpcr.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/pcr/REC/2025/12/qpcr.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/pcr/REC/2025/12/qpcr.json"
+        ]
+    },
+    "raman": {
+        "description": "Raman spectroscopy is any type of vibrational spectroscopy where the Raman scattering of monochromatic light, usually from a laser in the visible, near infrared, or near ultraviolet range by a sample is detected.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/raman/REC/2021/12/raman.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/raman/REC/2021/12/raman.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/raman/REC/2021/12/raman.json"
+        ]
+    },
+    "rheometry": {
+        "description": "Rheometry is the study of the flow of fluids which cannot be defined by a single value of viscosity. Rheometry is the measurement of the relationship between deformation and stress for these liquids.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/rheometry/REC/2025/12/rheometry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/rheometry/REC/2025/12/rheometry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/rheometry/REC/2025/12/rotational-rheometry.json"
+        ]
+    },
+    "sem": {
+        "description": "Scanning electron microscopy is a type of microscopy in which a finely focused electron beam is scanned across a surface and the intensity of the signal produced by the interaction of the beam with the sample is measured.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/sem/REC/2022/03/sem.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/sem/REC/2022/03/sem.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/sem/REC/2022/03/sem.json"
+        ]
+    },
+    "solution-analyzer": {
+        "description": "A solution analyzer is a device that measures multiple parameters of liquid solutions such as pH, conductivity, dissolved oxygen, and ion concentrations.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/solution-analyzer/REC/2025/12/solution-analyzer.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/solution-analyzer/REC/2025/12/solution-analyzer.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/solution-analyzer/REC/2025/12/solution-analyzer.json"
+        ]
+    },
+    "specific-rotation": {
+        "description": "Specific rotation is the change in orientation of monochromatic plane-polarized light, per unit distance–concentration product, as the light passes through a sample of a compound in solution.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/specific-rotation/REC/2021/12/specific-rotation.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/specific-rotation/REC/2021/12/specific-rotation.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/specific-rotation/REC/2021/12/specific-rotation.json"
+        ]
+    },
+    "spectrophotometry": {
+        "description": "Spectrophotometry is a type of spectroscopy where the sample absorbs radiation in the range ultraviolet to near-infrared resulting in electronic transitions within the sample. This model has been deprecated in favor of the electronic-spectrometry model.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/spectrophotometry/REC/2024/06/spectrophotometry.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/spectrophotometry/REC/2024/06/spectrophotometry.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/spectrophotometry/REC/2024/06/spectrophotometry.json"
+        ]
+    },
+    "stirring": {
+        "description": "Stirring is a mixing involving the agitation of a solution through circular motion.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/stirring/REC/2025/12/stirring.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/stirring/REC/2025/12/stirring.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/stirring/REC/2025/12/stirring.json"
+        ]
+    },
+    "surface-area-analysis": {
+        "description": "Surface area analysis is a measurement method for determining the specific surface area of materials by gas adsorption, typically using the BET (Brunauer-Emmett-Teller) theory.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/surface-area-analysis/REC/2021/12/surface-area-analysis.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/surface-area-analysis/REC/2021/12/surface-area-analysis.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/surface-area-analysis/REC/2021/12/surface-area-analysis.json"
+        ]
+    },
+    "tablet-hardness": {
+        "description": "Tablet hardness testing is a measurement method that determines the breaking force or crushing strength of a tablet.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/tablet-hardness/REC/2021/12/tablet-hardness.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/tablet-hardness/REC/2021/12/tablet-hardness.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/tablet-hardness/REC/2021/12/tablet-hardness.json"
+        ]
+    },
+    "temperature-monitoring": {
+        "description": "Temperature monitoring is an observing of temperature that is important for the successful and/or safe operation of a controlled process.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/temperature-monitoring/REC/2025/12/temperature-sensor.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/temperature-monitoring/REC/2025/12/temperature-sensor.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/temperature-monitoring/REC/2025/12/temperature-sensor.json"
+        ]
+    },
+    "tensile-test": {
+        "description": "Tensile testing is a measurement method where a sample is subjected to a controlled tension until failure to determine material properties such as tensile strength, elongation, and elastic modulus.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/tensile-test/REC/2025/12/tensile-test.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/tensile-test/REC/2025/12/tensile-test.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/tensile-test/REC/2025/12/tensile-test.json"
+        ]
+    },
+    "thermogravimetric-analysis": {
+        "description": "Thermogravimetric analysis is a thermal analysis method where the mass of a sample is measured as a function of temperature or time while the sample is subjected to a controlled temperature program.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/thermogravimetric-analysis/REC/2021/12/thermogravimetric-analysis.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/thermogravimetric-analysis/REC/2021/12/thermogravimetric-analysis.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/thermogravimetric-analysis/REC/2021/12/thermogravimetric-analysis.json"
+        ]
+    },
+    "titration": {
+        "description": "Titration is the process of determining the quantity of a sample by adding measured increments of a titrant until the endpoint, at which essentially all of the sample has reacted, is reached.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/titration/REC/2021/12/titration.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/titration/REC/2021/12/titration.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/titration/REC/2021/12/titration.json"
+        ]
+    },
+    "ultraviolet-absorbance": {
+        "description": "Ultraviolet absorbance is the measurement of the absorption of ultraviolet radiation by a sample as a function of wavelength.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/ultraviolet-absorbance/REC/2025/06/ultraviolet-absorbance.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/06/plate-reader.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/ultraviolet-absorbance/REC/2024/03/ultraviolet-absorbance.json"
+        ]
+    },
+    "x-ray-powder-diffraction": {
+        "description": "X-ray powder diffraction is a method where a powder sample is irradiated with X-rays of a fixed wavelength and the intensity of the reflected radiation is recorded as a function of angle.",
+        "asm_manifest": "http://purl.allotrope.org/manifests/x-ray-powder-diffraction/REC/2021/12/x-ray-powder-diffraction.manifest",
+        "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/x-ray-powder-diffraction/REC/2021/12/x-ray-powder-diffraction.embed.schema",
+        "asm_data_instance_examples": [
+            "http://purl.allotrope.org/test/adm/x-ray-powder-diffraction/REC/2021/12/x-ray-powder-diffraction.json"
+        ]
+    }
+}

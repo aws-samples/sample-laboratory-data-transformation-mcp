@@ -26,14 +26,14 @@ from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 from typing import Any
-from awslabs.allotrope_mcp_server.constants import (
-    GITLAB_TREE_URL,
-    GITLAB_REF,
-    GITLAB_PATH,
-    HTTP_TIMEOUT_SECONDS,
-    PURL_PREFIX,
-    JSON_SCHEMAS_PREFIX,
-)
+
+GITLAB_TREE_URL = "https://gitlab.com/api/v4/projects/42714196/repository/tree"
+GITLAB_REF = "main"
+GITLAB_PATH = "json-schemas/adm"
+HTTP_TIMEOUT_SECONDS = 30
+
+PURL_PREFIX = "http://purl.allotrope.org/"
+JSON_SCHEMAS_PREFIX = "json-schemas/"
 
 mcp = FastMCP(
     "awslabs.allotrope-mcp-server",
