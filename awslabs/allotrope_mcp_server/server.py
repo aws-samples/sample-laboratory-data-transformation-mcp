@@ -14,8 +14,8 @@
 
 """awslabs allotrope MCP Server implementation."""
 
+import asyncio
 import json
-import jsonref
 import os
 import urllib.error
 import urllib.request
@@ -24,13 +24,12 @@ from jsonschema import Draft202012Validator
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
-from typing import Any
+
 
 
 HTTP_TIMEOUT_SECONDS = 30
 
-PURL_PREFIX = 'http://purl.allotrope.org/'
-JSON_SCHEMAS_PREFIX = 'json-schemas/'
+PURL_ORIGIN = 'http://purl.allotrope.org'
 
 mcp = FastMCP(
     'awslabs.allotrope-mcp-server',
@@ -44,71 +43,6 @@ mcp = FastMCP(
         'pydantic',
     ],
 )
-
-
-def _normalize_schema_id(schema_id: str) -> str:
-    """Parse a flexible schema identifier into a normalized path.
-
-    Accepts full URIs, ``json-schemas/``-prefixed paths, or bare suffixes
-    and returns a path starting with ``json-schemas/``.
-
-    Args:
-        schema_id: The user-provided schema identifier.
-
-    Returns:
-        Normalized path starting with ``json-schemas/``.
-    """
-    path = schema_id
-    if PURL_PREFIX in path:
-        path = path.split(PURL_PREFIX, 1)[1]
-    if JSON_SCHEMAS_PREFIX in path:
-        path = path[path.index(JSON_SCHEMAS_PREFIX) :]
-    else:
-        path = JSON_SCHEMAS_PREFIX + path
-    return path
-
-
-def _generate_embed_filename(filename: str) -> str:
-    """Transform a schema filename into its embed variant.
-
-    Inserts ``.embed`` before the extension portion and ensures the result
-    ends with ``.json``.
-
-    Args:
-        filename: Original schema filename (e.g. ``conductivity.schema``).
-
-    Returns:
-        Embed filename (e.g. ``conductivity.embed.schema.json``).
-    """
-    dot_idx = filename.index('.')
-    name_part = filename[:dot_idx]
-    ext_part = filename[dot_idx:]
-    result = f'{name_part}.embed{ext_part}'
-    if not result.endswith('.json'):
-        result += '.json'
-    return result
-
-
-def _asm_json_loader(uri: str, **kwargs: Any) -> Any:
-    """Fetch and parse a remote JSON schema for jsonref resolution.
-
-    Args:
-        uri: The absolute URI to fetch.
-        **kwargs: Additional keyword arguments (unused, required by jsonref loader protocol).
-
-    Returns:
-        Parsed JSON object (dict or list).
-
-    Raises:
-        urllib.error.HTTPError: On non-2xx HTTP responses.
-        urllib.error.URLError: On connection failures.
-        TimeoutError: When the request exceeds the timeout.
-        json.JSONDecodeError: When the response is not valid JSON.
-    """
-    req = urllib.request.Request(uri, method='GET')
-    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
-        body = resp.read().decode('utf-8')
-        return json.loads(body)
 
 
 
@@ -208,106 +142,63 @@ def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
 
 
 @mcp.tool()
-def get_asm_schema(id: str, output_dir: str = '') -> str:
-    """Download and resolve an Allotrope ASM JSON schema.
+async def fetch_asm_document(asm_document_uri: str, output_dir: str = '') -> str:
+    """Fetch a raw ASM JSON document from purl.allotrope.org.
 
-    Downloads the schema identified by ``id`` from the official Allotrope PURL
-    repository, resolves all ``$ref`` references inline, and saves the fully
-    resolved schema to the local filesystem.  If the resolved file already
-    exists locally it is returned immediately without downloading.
+    Downloads the document identified by ``asm_document_uri`` from the Allotrope
+    PURL repository and saves it to the local filesystem at a path that mirrors
+    the URI structure.  If the file already exists it is returned immediately
+    without re-downloading.  Unlike ``get_asm_schema``, ``$ref`` references are
+    NOT resolved — the document is saved exactly as received.
 
     Args:
-        id: Schema identifier — accepts a full URI
-            (``http://purl.allotrope.org/...``), a ``json-schemas/``-prefixed
-            path, or a bare suffix path.
-        output_dir: Optional base directory for saving the schema.  Defaults
-            to the current working directory when empty.
+        asm_document_uri: Fully-qualified URI starting with
+            ``http://purl.allotrope.org``.
+        output_dir: Base directory for saving the document.  Defaults to the
+            current working directory when empty.
 
     Returns:
         JSON string with a ``path`` key containing the absolute path to the
         saved file, or an ``error`` key with a description on failure.
     """
     try:
-        normalized_path = _normalize_schema_id(id)
-        filename = normalized_path.rsplit('/', 1)[-1]
-        embed_filename = _generate_embed_filename(filename)
+        if not asm_document_uri.startswith(PURL_ORIGIN):
+            return json.dumps({'error': f'Invalid URI: {asm_document_uri!r} must start with {PURL_ORIGIN!r}'})
 
         base_dir = output_dir if output_dir else os.getcwd()
-        dir_part = normalized_path.rsplit('/', 1)[0] if '/' in normalized_path else ''
-        absolute_path = Path(base_dir) / dir_part / embed_filename
-        absolute_path = absolute_path.resolve()
+        mirror_path = asm_document_uri[len(PURL_ORIGIN):].lstrip('/')
+        dest = Path(base_dir) / mirror_path
 
-        if absolute_path.exists():
-            return json.dumps({'path': str(absolute_path)})
+        if dest.exists():
+            return json.dumps({'path': str(dest.resolve())})
 
-        uri = f'{PURL_PREFIX}{normalized_path}'
-
+        # Downloader
+        loop = asyncio.get_event_loop()
         try:
-            req = urllib.request.Request(uri, method='GET')
-            with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
-                body = resp.read().decode('utf-8')
+            def _fetch() -> bytes:
+                with urllib.request.urlopen(asm_document_uri, timeout=HTTP_TIMEOUT_SECONDS) as resp:
+                    return resp.read()
+            body = await loop.run_in_executor(None, _fetch)
         except urllib.error.HTTPError as exc:
-            return json.dumps({'error': f'Failed to download {uri}: HTTP {exc.code}'})
+            return json.dumps({'error': f'Failed to download {asm_document_uri}: HTTP {exc.code}'})
         except urllib.error.URLError as exc:
-            return json.dumps({'error': f'Failed to connect to {uri}: {exc.reason}'})
+            return json.dumps({'error': f'Failed to connect to {asm_document_uri}: {exc.reason}'})
         except TimeoutError:
-            return json.dumps({'error': f'Request timed out for {uri}'})
+            return json.dumps({'error': f'Request timed out for {asm_document_uri}'})
 
         try:
-            schema = json.loads(body)
+            data = json.loads(body)
         except json.JSONDecodeError:
-            return json.dumps({'error': f'Invalid JSON received from {uri}'})
+            return json.dumps({'error': f'Invalid JSON received from {asm_document_uri}'})
 
+        # Writer
         try:
-
-            def _deep_resolve(obj: Any) -> Any:
-                """Recursively convert jsonref proxy objects to plain Python types.
-
-                When *merge_props* is enabled on ``jsonref.replace_refs``, the
-                ``JsonRef`` proxy merges sibling keys (e.g. ``$asm.pattern``)
-                from the original ``$ref`` object into the resolved target.
-                Those merged keys are visible when iterating the proxy as a
-                dict but are **not** present on ``__subject__``.  We therefore
-                iterate the proxy directly instead of unwrapping it.
-                """
-                if isinstance(obj, jsonref.JsonRef):
-                    # Iterate the proxy (includes merged sibling keys).
-                    return {k: _deep_resolve(v) for k, v in obj.items()}
-                if isinstance(obj, dict):
-                    return {k: _deep_resolve(v) for k, v in obj.items()}
-                if isinstance(obj, list):
-                    return [_deep_resolve(item) for item in obj]
-                return obj
-
-            refs_replaced = jsonref.replace_refs(
-                schema, loader=_asm_json_loader, lazy_load=False, merge_props=True
-            )
-            resolved = _deep_resolve(refs_replaced)
-        except jsonref.JsonRefError as exc:
-            cause = exc.__cause__
-            ref_uri = exc.uri
-            if isinstance(cause, urllib.error.HTTPError):
-                return json.dumps(
-                    {'error': f'Failed to resolve $ref {ref_uri}: HTTP {cause.code}'}
-                )
-            if isinstance(cause, urllib.error.URLError):
-                return json.dumps({'error': f'Failed to resolve $ref {ref_uri}: {cause.reason}'})
-            if isinstance(cause, TimeoutError):
-                return json.dumps({'error': (f'Request timed out while resolving $ref {ref_uri}')})
-            if isinstance(cause, json.JSONDecodeError):
-                return json.dumps(
-                    {'error': (f'Invalid JSON encountered while resolving $ref {ref_uri}')}
-                )
-            return json.dumps({'error': f'Failed to resolve $ref {ref_uri}: {exc}'})
-
-        try:
-            os.makedirs(absolute_path.parent, exist_ok=True)
-            with open(absolute_path, 'w') as f:
-                json.dump(resolved, f, indent=2)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(json.dumps(data, indent=2), encoding='utf-8')
         except OSError as exc:
-            return json.dumps({'error': f'Failed to write schema to {absolute_path}: {exc}'})
+            return json.dumps({'error': f'Failed to write document to {dest}: {exc}'})
 
-        return json.dumps({'path': str(absolute_path)})
+        return json.dumps({'path': str(dest.resolve())})
 
     except Exception as exc:
         return json.dumps({'error': str(exc)})

@@ -13,7 +13,7 @@ This MCP server provides the following tools:
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from the bundled reference file
 - **describe_asm**: Retrieve full metadata for a specific ASM model by name, including its description, manifest URL, JSON schema URL, and data instance example URLs
 - **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
-- **get_asm_schema**: Download and resolve Allotrope ASM JSON schemas with all `$ref` references embedded inline for offline use
+- **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure, without resolving `$ref` references
 
 ## Installation
 
@@ -94,7 +94,7 @@ Once configured in Kiro, you can use natural language to interact with the tools
 - "Describe the absorbance ASM model"
 - "Validate this ASM document against the plate reader schema"
 - "Check if my instrument data file is valid ASM format"
-- "Download the plate reader ASM schema and resolve all references"
+- "Fetch the plate reader embed schema document to my project"
 
 ### Example: Validating an ASM Document
 
@@ -105,13 +105,13 @@ You: Validate tests/testdata/plate_reader_weyland_yutani_valid.json
 
 Kiro will use the `validate_asm` tool to check the document and report any validation errors.
 
-### Example: Downloading an ASM Schema
+### Example: Fetching a Raw ASM Document
 
 ```bash
-You: Download the conductivity ASM schema to my project
+You: Fetch the plate reader embed schema document to my project
 ```
 
-Kiro will use the `get_asm_schema` tool to download the schema, resolve all `$ref` references inline, and save the self-contained schema locally.
+Kiro will use the `fetch_asm_document` tool to download the raw JSON document from `purl.allotrope.org` and save it locally at a path that mirrors the URI structure.
 
 ## Tool Reference
 
@@ -146,32 +146,30 @@ Returns the full metadata for a specific ASM model by name. Looks up the model i
 }
 ```
 
-### get_asm_schema
+### fetch_asm_document
 
-Downloads an Allotrope ASM JSON schema from the official PURL repository, resolves all `$ref` references by embedding them inline, and saves the fully resolved schema to the local filesystem.
+Downloads a raw ASM JSON document from the Allotrope PURL repository (`purl.allotrope.org`) and saves it to the local filesystem at a path that mirrors the URI structure. `$ref` references are **not** resolved — the document is saved exactly as received.
 
 **Parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | Yes | Schema identifier. Accepts a full URI (`http://purl.allotrope.org/json-schemas/...`), a `json-schemas/`-prefixed path, or a bare suffix path. |
-| `output_dir` | string | No | Base directory for saving the schema. Defaults to the current working directory. |
-
-**Schema ID formats:**
-
-All of the following are equivalent:
-- Full URI: `http://purl.allotrope.org/json-schemas/adm/conductivity/REC/2021/12/conductivity.schema`
-- Path with prefix: `json-schemas/adm/conductivity/REC/2021/12/conductivity.schema`
-- Bare path: `adm/conductivity/REC/2021/12/conductivity.schema`
+| `asm_document_uri` | string | Yes | Fully-qualified URI starting with `http://purl.allotrope.org` (case-sensitive). |
+| `output_dir` | string | No | Base directory for saving the document. Defaults to the current working directory. |
 
 **Behavior:**
 
-- If the resolved schema file already exists locally, returns the path without re-downloading
-- Downloads the schema from `http://purl.allotrope.org/` and resolves all external `$ref` references inline
-- Generates an embed filename (e.g., `conductivity.schema` → `conductivity.embed.schema.json`)
-- Creates parent directories as needed and saves the formatted JSON
+- Rejects URIs that do not start with `http://purl.allotrope.org` (case-sensitive) — no network call is made on rejection
+- If the file already exists at the derived local path, returns the path immediately without re-downloading
+- Downloads the document and validates it is well-formed JSON before writing
+- Creates parent directories as needed and saves the document as UTF-8 JSON with 2-space indentation
 - Returns a JSON object with a `path` key on success, or an `error` key on failure
-- Uses the `jsonref` library for `$ref` resolution; circular `$ref` chains are handled safely without hanging
+
+**Example response (success):**
+
+```json
+{"path": "/absolute/path/to/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema"}
+```
 
 ### validate_asm
 
