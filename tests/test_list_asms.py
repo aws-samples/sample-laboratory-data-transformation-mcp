@@ -16,7 +16,10 @@
 
 import json
 from awslabs.allotrope_mcp_server.server import list_asms
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from pathlib import Path
+from unittest.mock import mock_open, patch
 
 
 class TestListAsmsTool:
@@ -151,3 +154,115 @@ class TestListAsmsTool:
         # Verify error response
         assert 'error' in result
         assert 'Unexpected error' in result['error']
+
+
+class TestListAsmsProperties:
+    """Property-based tests for the list_asms tool.
+
+    **Validates: Requirements 3.1, 3.2, 3.3, 4.1, 4.2, 4.4**
+    """
+
+    @given(
+        model_data=st.dictionaries(
+            keys=st.text(min_size=1, max_size=50),
+            values=st.fixed_dictionaries(
+                {
+                    'description': st.text(min_size=1),
+                    'asm_manifest': st.text(),
+                    'asm_json_schema': st.text(),
+                    'asm_data_instance_examples': st.lists(st.text()),
+                }
+            ),
+            min_size=1,
+        )
+    )
+    @settings(max_examples=100)
+    async def test_complete_asm_extraction(self, model_data):
+        """Property 1: Complete ASM Extraction.
+
+        For any valid model_reference structure, the returned response should
+        contain exactly all top-level keys as ASM IDs, and each ASM ID should
+        map to the corresponding description field value.
+
+        **Validates: Requirements 3.1, 3.2, 3.3, 4.1, 4.2, 4.4**
+        """
+        serialized = json.dumps(model_data)
+        with patch('builtins.open', mock_open(read_data=serialized)):
+            result_json = await list_asms()
+
+        result = json.loads(result_json)
+
+        # All keys from generated data must be present in response
+        for asm_id in model_data:
+            assert asm_id in result, f'ASM ID {asm_id!r} missing from response'
+
+        # No extra keys should appear
+        assert set(result.keys()) == set(model_data.keys())
+
+        # All descriptions must match exactly
+        for asm_id, asm_entry in model_data.items():
+            assert result[asm_id] == asm_entry['description'], (
+                f'Description mismatch for {asm_id!r}'
+            )
+
+    @given(
+        scenario=st.sampled_from(['success', 'file_not_found', 'malformed_json', 'missing_description'])
+    )
+    @settings(max_examples=100)
+    async def test_valid_json_response(self, scenario):
+        """Property 2: Valid JSON Response.
+
+        For any execution of the tool (successful or error), the returned string
+        should be valid JSON that can be parsed without errors.
+
+        Validates: Requirements 3.4, 4.3
+        """
+        if scenario == 'success':
+            valid_data = json.dumps({'test-asm': {'description': 'A test ASM'}})
+            with patch('builtins.open', mock_open(read_data=valid_data)):
+                result_json = await list_asms()
+        elif scenario == 'file_not_found':
+            with patch('builtins.open', side_effect=FileNotFoundError('no file')):
+                result_json = await list_asms()
+        elif scenario == 'malformed_json':
+            with patch('builtins.open', mock_open(read_data='not valid json')):
+                result_json = await list_asms()
+        else:  # missing_description
+            data = json.dumps({'test-asm': {'asm_manifest': 'url'}})
+            with patch('builtins.open', mock_open(read_data=data)):
+                result_json = await list_asms()
+
+        # Response must always be valid JSON regardless of scenario
+        parsed = json.loads(result_json)
+        assert isinstance(parsed, dict)
+
+    @given(
+        exc=st.one_of(
+            st.just(FileNotFoundError('simulated file not found')),
+            st.just(json.JSONDecodeError('simulated decode error', 'doc', 0)),
+            st.just(KeyError('description')),
+            st.just(RuntimeError('simulated unexpected error')),
+        )
+    )
+    @settings(max_examples=100)
+    async def test_error_handling_completeness(self, exc):
+        """Property 3: Error Handling Completeness.
+
+        For any exception that occurs during execution, the tool should return a
+        JSON response containing an 'error' key with a non-empty descriptive
+        message, and should never raise an unhandled exception.
+
+        Validates: Requirements 5.1, 5.2, 5.3
+        """
+        with patch('builtins.open', side_effect=exc):
+            result_json = await list_asms()
+
+        # Must always return valid JSON
+        result = json.loads(result_json)
+
+        # Must always contain 'error' key
+        assert 'error' in result, f'Expected error key in response, got: {result}'
+
+        # Error message must be a non-empty string
+        assert isinstance(result['error'], str)
+        assert len(result['error']) > 0, 'Error message must not be empty'
