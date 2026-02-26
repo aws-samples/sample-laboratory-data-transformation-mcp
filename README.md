@@ -1,6 +1,6 @@
 # AWS Labs Allotrope MCP Server
 
-A Model Context Protocol (MCP) server that provides tools for working with Allotrope Simple Model (ASM) data formats. This server enables AI assistants to validate instrument data files against ASM schemas and discover available ASM techniques.
+A Model Context Protocol (MCP) server that provides tools for working with Allotrope Simple Model (ASM) data formats. This server enables AI assistants to validate instrument data files against ASM schemas and discover available ASMs.
 
 ## What is Allotrope?
 
@@ -11,7 +11,6 @@ A Model Context Protocol (MCP) server that provides tools for working with Allot
 This MCP server provides the following tools:
 
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from the bundled reference file
-- **list_asm_techniques**: Discover all available ASM technique types from the official Allotrope GitLab repository
 - **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
 - **get_asm_schema**: Download and resolve Allotrope ASM JSON schemas with all `$ref` references embedded inline for offline use
 
@@ -84,14 +83,13 @@ The server will automatically connect when you restart Kiro, or you can manually
 - **args**: Specify the directory path and run command
 - **env.FASTMCP_LOG_LEVEL**: Control logging verbosity (ERROR, WARNING, INFO, DEBUG)
 - **disabled**: Set to `true` to temporarily disable the server
-- **autoApprove**: List tool names that don't require approval (e.g., `["list_asm_techniques"]`)
+- **autoApprove**: List tool names that don't require approval (e.g., `["list_asms"]`)
 
 ## Usage Examples
 
 Once configured in Kiro, you can use natural language to interact with the tools:
 
 - "List all available ASMs"
-- "List all available ASM techniques"
 - "Validate this ASM document against the plate reader schema"
 - "Check if my instrument data file is valid ASM format"
 - "Download the plate reader ASM schema and resolve all references"
@@ -149,12 +147,6 @@ All of the following are equivalent:
 - Creates parent directories as needed and saves the formatted JSON
 - Returns a JSON object with a `path` key on success, or an `error` key on failure
 - Uses the `jsonref` library for `$ref` resolution; circular `$ref` chains are handled safely without hanging
-
-### list_asm_techniques
-
-Discovers all available ASM technique types from the official Allotrope GitLab repository.
-
-**Parameters:** None
 
 ### validate_asm
 
