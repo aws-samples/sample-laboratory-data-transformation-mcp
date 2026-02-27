@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "awslabs.allotrope-mcp-server": {
+      "command": "uv",
+      "args": [
+        "run",
+        "awslabs.allotrope-mcp-server"
+      ],
+      "disabled": false,
+      "autoApprove": [],
+      "disabledTools": []
+    }
+  }
+}

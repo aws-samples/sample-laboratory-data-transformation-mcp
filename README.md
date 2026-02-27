@@ -10,10 +10,10 @@ A Model Context Protocol (MCP) server that provides tools for working with Allot
 
 This MCP server provides the following tools:
 
-- **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from the bundled reference file
 - **describe_asm**: Retrieve full metadata for a specific ASM model by name, including its description, manifest URL, JSON schema URL, and data instance example URLs
+- **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure
+- **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from a bundled reference file
 - **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
-- **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure, without resolving `$ref` references
 
 ## Installation
 
@@ -26,8 +26,8 @@ This MCP server provides the following tools:
 
 ```bash
 # Clone the repository
-git clone https://github.com/awslabs/mcp.git
-cd mcp/src/allotrope-mcp-server
+git clone git@ssh.gitlab.aws.dev:allotrope-as-a-service/allotrope-mcp-server.git
+cd allotrope-mcp-server
 
 # Install dependencies
 uv sync
@@ -38,53 +38,23 @@ uv run awslabs.allotrope-mcp-server
 
 ## Integration with Kiro
 
-To use this MCP server with Kiro, you need to add it to your MCP configuration file.
+This repo includes a [Kiro Power](https://kiro.dev/docs/powers/) in the `power-instrument-data-to-allotrope/` folder. The power bundles the MCP server configuration and a guided workflow for converting laboratory instrument data into valid ASM JSON.
 
-### Step 1: Locate Your MCP Configuration
+### Install the Power
 
-Kiro uses MCP configuration files at different levels:
+1. Open Kiro and go to the Powers panel (click the **Powers** icon in the sidebar, or run `View: Show Powers` from the command palette).
+2. Click **Add Custom Power** and then **Import power from a folder**. Select the `power-instrument-data-to-allotrope/` directory from this repo.
+3. Kiro will register the `awslabs.allotrope-mcp-server` MCP server automatically using the bundled `mcp.json`.
 
-- **User-level** (global): `~/.kiro/settings/mcp.json`
-- **Workspace-level**: `.kiro/settings/mcp.json` (in your project root)
+### Use the Power
 
-Create the file if it doesn't exist.
+Once installed, open a new chat and type `/` to browse available powers. Select **Instrument Data to Allotrope** and provide:
 
-### Step 2: Add Server Configuration
+- `input_path` — path to your instrument data file
+- `asm_model` — the target ASM model name (e.g. `plate-reader`)
+- `output_path` _(optional)_ — destination for the generated ASM JSON (defaults to `<input_path>.asm.json`)
 
-Add the following configuration to your `mcp.json` file, replacing `/path/to/allotrope-mcp-server` with the actual path to your local installation:
-
-```json
-{
-  "mcpServers": {
-    "allotrope": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/path/to/allotrope-mcp-server",
-        "run",
-        "awslabs.allotrope-mcp-server"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-### Step 3: Restart or Reconnect
-
-The server will automatically connect when you restart Kiro, or you can manually reconnect it from the MCP Server view in the Kiro feature panel.
-
-### Configuration Options
-
-- **command**: Use `uv` to run the server from your local installation
-- **args**: Specify the directory path and run command
-- **env.FASTMCP_LOG_LEVEL**: Control logging verbosity (ERROR, WARNING, INFO, DEBUG)
-- **disabled**: Set to `true` to temporarily disable the server
-- **autoApprove**: List tool names that don't require approval (e.g., `["list_asms"]`)
+Kiro will guide you through schema discovery, data parsing, code generation, and validation against the ASM schema.
 
 ## Usage Examples
 
@@ -108,20 +78,12 @@ Kiro will use the `validate_asm` tool to check the document and report any valid
 ### Example: Fetching a Raw ASM Document
 
 ```bash
-You: Fetch the plate reader embed schema document to my project
+You: Download the plate reader schema document to my project
 ```
 
 Kiro will use the `fetch_asm_document` tool to download the raw JSON document from `purl.allotrope.org` and save it locally at a path that mirrors the URI structure.
 
 ## Tool Reference
-
-### list_asms
-
-Lists all available Allotrope Simple Models (ASMs) with their descriptions. Reads from the bundled `model_reference.json` file and returns a mapping of ASM IDs to descriptions.
-
-**Parameters:** None
-
-**Returns:** A JSON object mapping ASM identifiers to their descriptions, or an `error` key on failure.
 
 ### describe_asm
 
@@ -171,6 +133,14 @@ Downloads a raw ASM JSON document from the Allotrope PURL repository (`purl.allo
 {"path": "/absolute/path/to/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema"}
 ```
 
+### list_asms
+
+Lists all available Allotrope Simple Models (ASMs) with their descriptions. Reads from the bundled `model_reference.json` file and returns a mapping of ASM IDs to descriptions.
+
+**Parameters:** None
+
+**Returns:** A JSON object mapping ASM identifiers to their descriptions, or an `error` key on failure.
+
 ### validate_asm
 
 Validates an ASM JSON document against its corresponding JSON schema.
@@ -208,7 +178,6 @@ uv run pyright
 - [Allotrope Foundation](https://www.allotrope.org/)
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
 - [AWS Labs MCP Servers](https://awslabs.github.io/mcp/)
-- [Project Repository](https://github.com/awslabs/mcp)
 
 ## License
 
