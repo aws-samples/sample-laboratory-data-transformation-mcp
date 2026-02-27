@@ -18,7 +18,7 @@
         ]
     },
     "balance": {
-        "description": "A balance is a weighing device, intended predominantly for medium to low capacity weighments, with moderate to high resolutions, mostly used indoors. This model has been deprecated in favor of the solution-analyzer model",
+        "description": "A balance is a weighing device, intended predominantly for medium to low capacity weighments, with moderate to high resolutions, mostly used indoors.",
         "asm_manifest": "http://purl.allotrope.org/manifests/balance/REC/2025/12/balance.manifest",
         "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/balance/REC/2025/12/balance.embed.schema",
         "asm_data_instance_examples": [
@@ -57,7 +57,7 @@
             "http://purl.allotrope.org/test/adm/cell-counting/REC/2025/12/cell-counting.json"
         ]
     },
-    "cell-culture-analyzer": {
+    "2025": {
         "description": "A cell culture analyzer is a device that measures and monitors parameters of cell cultures such as cell density, viability, and metabolite concentrations.",
         "asm_manifest": "http://purl.allotrope.org/manifests/cell-culture-analyzer/REC/2021/12/cell-culture-analyzer.manifest",
         "asm_json_schema": "http://purl.allotrope.org/json-schemas/adm/cell-culture-analyzer/REC/2021/12/cell-culture-analyzer.embed.schema",
