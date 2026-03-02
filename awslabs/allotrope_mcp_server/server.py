@@ -290,7 +290,7 @@ async def describe_asm(model_name: str) -> str:
     """Return the metadata for a specific ASM model by name.
 
     Args:
-        model_name: The key identifying the ASM model (e.g. 'absorbance').
+        model_name: The key identifying the ASM model (e.g. 'automated-reactors').
 
     Returns:
         JSON string containing the model metadata on success, or an error object
