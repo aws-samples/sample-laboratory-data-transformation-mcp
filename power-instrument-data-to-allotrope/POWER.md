@@ -14,6 +14,32 @@ Converts raw instrument data into a valid Allotrope Simple Model (ASM) JSON data
 that conforms to the target ASM schema. Covers schema discovery, data parsing, JSON generation,
 and schema validation using the Allotrope MCP server tools.
 
+## ASM Document Structure
+
+ASM organises experimental data as a hierarchy of modular documents. Understanding this structure
+is essential when writing a converter, as the generated JSON must mirror it exactly.
+
+```bash
+Technique Aggregate Document          ← top-level container (e.g. "plate reader aggregate document")
+├── Device System Document            ← instrument hardware metadata (model, manufacturer, serial)
+├── Data System Document              ← software / data-processing metadata (version, file paths)
+└── Technique Document[]              ← one entry per execution of the technique (e.g. one plate run)
+    ├── Measurement Aggregate Document
+    │   └── Measurement Document[]    ← one entry per individual measurement (e.g. one well)
+    ├── Processed Data Document       ← derived results (peak lists, spectra, …)
+    ├── Sample Document               ← sample identity and provenance
+    ├── Device Control Document       ← acquisition settings and parameters
+    └── Calculated Data Document      ← values computed across measurements or samples
+```
+
+Key points to keep in mind:
+
+- The root key in the JSON file matches the technique aggregate document name defined in the schema (e.g. `plate reader aggregate document`).
+- `$asm.manifest` at the root declares the schema the document conforms to — copy this value verbatim from a valid example instance. The manifest URI should end in ".manifest"
+- Device System and Data System documents capture *who* and *what* produced the data; Measurement Documents capture the actual readings.
+- Technique Document is an array — even a single run must be wrapped in a list.
+- Measurement Aggregate Document is a container; individual readings live inside its `measurement document` array.
+
 ## Parameters
 
 - **input_path** (required): Path to the instrument data file to convert
