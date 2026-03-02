@@ -73,7 +73,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     """
     # Read document
     try:
-        with open(document_path, encoding='utf-8') as f:
+        with open(document_path, encoding="utf-8") as f:
             document_text = f.read()
     except FileNotFoundError:
         return ValidationResult(
@@ -91,7 +91,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
 
     # Read schema
     try:
-        with open(schema_path, encoding='utf-8') as f:
+        with open(schema_path, encoding="utf-8") as f:
             schema_text = f.read()
     except FileNotFoundError:
         return ValidationResult(
@@ -180,7 +180,9 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
         parsed_uri = urllib.parse.urlparse(asm_document_uri)
         if parsed_uri.scheme != "https":
             return json.dumps(
-                {"error": f"Invalid URI scheme {parsed_uri.scheme!r}: only 'https' is permitted"}
+                {
+                    "error": f"Invalid URI scheme {parsed_uri.scheme!r}: only 'https' is permitted"
+                }
             )
 
         loop = asyncio.get_event_loop()
@@ -188,7 +190,10 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
 
             def _fetch() -> bytes:
                 req = urllib.request.Request(asm_document_uri)  # noqa: S310
-                with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:  # noqa: S310
+                # nosemgrep: dynamic-urllib-use-detected ASM document URIs are limited to https://purl.allotrope.org.
+                with urllib.request.urlopen(
+                    req, timeout=HTTP_TIMEOUT_SECONDS  # nosec: B310
+                ) as resp:  # noqa: S310
                     return resp.read()
 
             body = await loop.run_in_executor(None, _fetch)
@@ -232,7 +237,7 @@ def _load_model_reference() -> dict | None:
     model_ref_path = Path(__file__).parent / "model_reference.json"
 
     try:
-        with open(model_ref_path, encoding='utf-8') as f:
+        with open(model_ref_path, encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
         logger.error(f"Model reference file not found: {model_ref_path}")
@@ -262,7 +267,7 @@ async def list_asms() -> str:
         data = _load_model_reference()
         if data is None:
             try:
-                with open(model_ref_path, encoding='utf-8') as f:
+                with open(model_ref_path, encoding="utf-8") as f:
                     f.read()
                 # File opened fine — must be malformed JSON
                 return json.dumps(
@@ -308,7 +313,7 @@ async def describe_asm(model_name: str) -> str:
         if reference is None:
             model_ref_path = Path(__file__).parent / "model_reference.json"
             try:
-                with open(model_ref_path, encoding='utf-8') as f:
+                with open(model_ref_path, encoding="utf-8") as f:
                     f.read()
                 return json.dumps(
                     {
