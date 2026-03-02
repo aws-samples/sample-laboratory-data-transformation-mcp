@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass, field
 from jsonschema import Draft202012Validator
@@ -175,14 +176,19 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
         if dest.exists():
             return json.dumps({"path": str(dest.resolve())})
 
-        # Downloader
+        # Downloader — only https:// is permitted; file:// and other schemes are rejected.
+        parsed_uri = urllib.parse.urlparse(asm_document_uri)
+        if parsed_uri.scheme != "https":
+            return json.dumps(
+                {"error": f"Invalid URI scheme {parsed_uri.scheme!r}: only 'https' is permitted"}
+            )
+
         loop = asyncio.get_event_loop()
         try:
 
             def _fetch() -> bytes:
-                with urllib.request.urlopen(
-                    asm_document_uri, timeout=HTTP_TIMEOUT_SECONDS
-                ) as resp:
+                req = urllib.request.Request(asm_document_uri)  # noqa: S310
+                with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:  # noqa: S310
                     return resp.read()
 
             body = await loop.run_in_executor(None, _fetch)

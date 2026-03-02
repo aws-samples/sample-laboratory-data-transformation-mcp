@@ -110,11 +110,13 @@ def test_invalid_document_errors_contain_required_fields(doc: dict) -> None:
 
 
 # Strategy for file paths that don't exist on disk.
+# Use tempfile.gettempdir() instead of hardcoding /tmp to avoid B108.
+_tmp_dir = tempfile.gettempdir()
 _nonexistent_paths = st.text(
     alphabet=st.sampled_from('abcdefghijklmnopqrstuvwxyz0123456789_-'),
     min_size=1,
     max_size=60,
-).map(lambda s: f'/tmp/nonexistent_{s}.json')
+).map(lambda s: os.path.join(_tmp_dir, f'nonexistent_{s}.json'))
 
 
 @given(bad_path=_nonexistent_paths)

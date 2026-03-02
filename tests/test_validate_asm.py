@@ -67,17 +67,17 @@ class TestValidateAsmDocument:
             assert error.message
             assert error.validator
 
-    def test_document_file_not_found(self):
+    def test_document_file_not_found(self, tmp_path):
         """Test that a missing document file returns an error."""
-        missing = '/tmp/does_not_exist_abc123.json'
+        missing = str(tmp_path / 'does_not_exist_abc123.json')
         result = validate_asm_document(missing, SCHEMA)
         assert result.is_valid is False
         assert result.error_message is not None
         assert missing in result.error_message
 
-    def test_schema_file_not_found(self):
+    def test_schema_file_not_found(self, tmp_path):
         """Test that a missing schema file returns an error."""
-        missing = '/tmp/does_not_exist_abc123.json'
+        missing = str(tmp_path / 'does_not_exist_abc123.json')
         result = validate_asm_document(VALID_DOC, missing)
         assert result.is_valid is False
         assert result.error_message is not None
@@ -126,9 +126,10 @@ class TestValidateAsmTool:
         assert result['is_valid'] is False
         assert len(result['errors']) > 0
 
-    def test_missing_file_returns_json_with_error_message(self):
+    def test_missing_file_returns_json_with_error_message(self, tmp_path):
         """Test that validate_asm returns JSON with error_message for missing files."""
-        result_json = validate_asm('/tmp/nonexistent.json', SCHEMA)
+        missing = str(tmp_path / 'nonexistent.json')
+        result_json = validate_asm(missing, SCHEMA)
         result = json.loads(result_json)
         assert result['is_valid'] is False
         assert 'error_message' in result
