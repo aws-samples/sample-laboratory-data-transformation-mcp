@@ -17,7 +17,7 @@
 import json
 import os
 import tempfile
-from awslabs.allotrope_mcp_server.server import (
+from allotrope_mcp_server.server import (
     mcp,
     validate_asm,
     validate_asm_document,
@@ -40,7 +40,7 @@ class TestMcpServer:
 
     def test_mcp_server_name(self):
         """Test that the server has the correct name."""
-        assert mcp.name == 'awslabs.allotrope-mcp-server'
+        assert mcp.name == 'allotrope-mcp-server'
 
     def test_validate_asm_tool_registered(self):
         """Test that validate_asm tool is registered."""

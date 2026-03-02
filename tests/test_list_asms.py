@@ -15,7 +15,7 @@
 """Unit and property-based tests for the list_asms tool."""
 
 import json
-from awslabs.allotrope_mcp_server.server import list_asms
+from allotrope_mcp_server.server import list_asms
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from pathlib import Path
@@ -43,7 +43,7 @@ class TestListAsmsTool:
         assert 'error' not in result
 
         # Read the actual model_reference.json file to compare
-        package_dir = Path(__file__).parent.parent / 'awslabs' / 'allotrope_mcp_server'
+        package_dir = Path(__file__).parent.parent / 'allotrope_mcp_server'
         model_ref_path = package_dir / 'model_reference.json'
 
         with open(model_ref_path) as f:

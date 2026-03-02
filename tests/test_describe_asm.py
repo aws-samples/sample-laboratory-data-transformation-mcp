@@ -18,11 +18,11 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
-from awslabs.allotrope_mcp_server.server import describe_asm
+from allotrope_mcp_server.server import describe_asm
 
 
 # Load the real model_reference.json once for use in assertions
-_PACKAGE_DIR = Path(__file__).parent.parent / 'awslabs' / 'allotrope_mcp_server'
+_PACKAGE_DIR = Path(__file__).parent.parent / 'allotrope_mcp_server'
 _MODEL_REF_PATH = _PACKAGE_DIR / 'model_reference.json'
 
 with open(_MODEL_REF_PATH) as _f:
@@ -33,8 +33,8 @@ class TestDescribeAsmValidModels:
     """Unit tests for describe_asm with valid model names (Requirements 1.1, 1.2, 1.4)."""
 
     async def test_absorbance_returns_all_required_fields(self):
-        """Test that 'absorbance' returns metadata with all four required fields."""
-        result_json = await describe_asm('absorbance')
+        """Test that 'plate-reader' returns metadata with all four required fields."""
+        result_json = await describe_asm('plate-reader')
         result = json.loads(result_json)
 
         assert 'error' not in result
@@ -44,11 +44,11 @@ class TestDescribeAsmValidModels:
         assert 'asm_data_instance_examples' in result
 
     async def test_absorbance_metadata_matches_reference(self):
-        """Test that 'absorbance' metadata matches the bundled model_reference.json."""
-        result_json = await describe_asm('absorbance')
+        """Test that 'plate-reader' metadata matches the bundled model_reference.json."""
+        result_json = await describe_asm('plate-reader')
         result = json.loads(result_json)
 
-        expected = _MODEL_REFERENCE['absorbance']
+        expected = _MODEL_REFERENCE['plate-reader']
         assert result == expected
 
     async def test_balance_returns_all_required_fields(self):

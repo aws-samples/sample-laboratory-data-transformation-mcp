@@ -16,7 +16,7 @@
 
 import json
 import os
-from awslabs.allotrope_mcp_server.server import PURL_ORIGIN, fetch_asm_document
+from allotrope_mcp_server.server import PURL_ORIGIN, fetch_asm_document
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from pathlib import Path

@@ -1,5 +1,5 @@
 [project]
-name = "awslabs.allotrope-mcp-server"
+name = "allotrope-mcp-server"
 # NOTE: "Patch"=9223372036854775807 bumps next release to zero.
 version = "0.0.0"
 description = "An AWS Labs Model Context Protocol (MCP) server for allotrope"
@@ -36,7 +36,7 @@ homepage = "https://awslabs.github.io/mcp/"
 repository = "https://github.com/awslabs/mcp.git"
 
 [project.scripts]
-"awslabs.allotrope-mcp-server" = "awslabs.allotrope_mcp_server.server:main"
+"allotrope-mcp-server" = "allotrope_mcp_server.server:main"
 
 [dependency-groups]
 dev = [
@@ -97,7 +97,7 @@ line-ending = "auto"
 docstring-code-format = true
 
 [tool.pyright]
-include = ["awslabs", "tests"]
+include = ["allotrope_mcp_server", "tests"]
 exclude = [
   "**/__pycache__",
   "**/.venv",
@@ -112,12 +112,12 @@ version = "0.0.0"
 tag_format = "v$version"
 version_files = [
   "pyproject.toml:version",
-  "awslabs/allotrope_mcp_server/__init__.py:__version__"
+  "allotrope_mcp_server/__init__.py:__version__"
 ]
 update_changelog_on_bump = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["awslabs"]
+packages = ["allotrope_mcp_server"]
 
 [tool.bandit]
 exclude_dirs = ["venv", ".venv", "tests"]
@@ -140,4 +140,4 @@ exclude_also = [
 ]
 
 [tool.coverage.run]
-source = ["awslabs"]
+source = ["allotrope_mcp_server"]

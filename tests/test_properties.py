@@ -16,13 +16,13 @@
 
 import json
 import tempfile
-from awslabs.allotrope_mcp_server.server import describe_asm, validate_asm_document
+from allotrope_mcp_server.server import describe_asm, validate_asm_document
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from pathlib import Path
 
 # Load MODEL_REFERENCE once at module level for use in describe_asm property tests.
-_model_ref_path = Path(__file__).parent.parent / 'awslabs' / 'allotrope_mcp_server' / 'model_reference.json'
+_model_ref_path = Path(__file__).parent.parent / 'allotrope_mcp_server' / 'model_reference.json'
 with open(_model_ref_path) as _f:
     MODEL_REFERENCE: dict = json.load(_f)
 

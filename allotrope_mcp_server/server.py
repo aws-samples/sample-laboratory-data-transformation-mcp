@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""awslabs allotrope MCP Server implementation."""
+"""allotrope MCP Server implementation."""
 
 import asyncio
 import json
@@ -33,7 +33,7 @@ HTTP_TIMEOUT_SECONDS = 30
 PURL_ORIGIN = "http://purl.allotrope.org"
 
 mcp = FastMCP(
-    "awslabs.allotrope-mcp-server",
+    "allotrope-mcp-server",
     instructions=(
         "This MCP server provides tools to convert instrument data files into"
         " standardized Allotrope Simple Model (ASM) format."

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the awslabs.allotrope-mcp-server package."""
+"""Tests for the allotrope-mcp-server package."""
 
 import importlib
 import re
@@ -23,31 +23,20 @@ class TestInit:
 
     def test_version(self):
         """Test that __version__ is defined and follows semantic versioning."""
-        # Import the module
-        import awslabs.allotrope_mcp_server
+        import allotrope_mcp_server
 
-        # Check that __version__ is defined
-        assert hasattr(awslabs.allotrope_mcp_server, '__version__')
+        assert hasattr(allotrope_mcp_server, '__version__')
+        assert isinstance(allotrope_mcp_server.__version__, str)
 
-        # Check that __version__ is a string
-        assert isinstance(awslabs.allotrope_mcp_server.__version__, str)
-
-        # Check that __version__ follows semantic versioning (major.minor.patch)
         version_pattern = r'^\d+\.\d+\.\d+$'
-        assert re.match(version_pattern, awslabs.allotrope_mcp_server.__version__), (
-            f"Version '{awslabs.allotrope_mcp_server.__version__}' does not follow semantic versioning"
+        assert re.match(version_pattern, allotrope_mcp_server.__version__), (
+            f"Version '{allotrope_mcp_server.__version__}' does not follow semantic versioning"
         )
 
     def test_module_reload(self):
         """Test that the module can be reloaded."""
-        # Import the module
-        import awslabs.allotrope_mcp_server
+        import allotrope_mcp_server
 
-        # Store the original version
-        original_version = awslabs.allotrope_mcp_server.__version__
-
-        # Reload the module
-        importlib.reload(awslabs.allotrope_mcp_server)
-
-        # Check that the version is still the same
-        assert awslabs.allotrope_mcp_server.__version__ == original_version
+        original_version = allotrope_mcp_server.__version__
+        importlib.reload(allotrope_mcp_server)
+        assert allotrope_mcp_server.__version__ == original_version

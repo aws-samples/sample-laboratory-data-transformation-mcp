@@ -14,14 +14,14 @@
 
 """Tests for the main function in server.py."""
 
-from awslabs.allotrope_mcp_server.server import main
+from allotrope_mcp_server.server import main
 from unittest.mock import patch
 
 
 class TestMain:
     """Tests for the main function."""
 
-    @patch('awslabs.allotrope_mcp_server.server.mcp.run')
+    @patch('allotrope_mcp_server.server.mcp.run')
     @patch('sys.argv', ['awslabs.allotrope-mcp-server'])
     def test_main_default(self, mock_run):
         """Test main function with default arguments."""
@@ -39,13 +39,13 @@ class TestMain:
 
         # Get the source code of the module
         import inspect
-        from awslabs.allotrope_mcp_server import server
+        from allotrope_mcp_server import server
 
         # Get the source code
         source = inspect.getsource(server)
 
         # Check that the module has the if __name__ == '__main__': block
-        assert "if __name__ == '__main__':" in source
+        assert 'if __name__ == "__main__":' in source
         assert 'main()' in source
 
         # This test doesn't actually execute the code, but it ensures

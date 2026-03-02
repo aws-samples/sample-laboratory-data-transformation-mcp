@@ -1,4 +1,4 @@
-# AWS Labs Allotrope MCP Server
+# Allotrope MCP Server
 
 A Model Context Protocol (MCP) server that provides tools for working with Allotrope Simple Model (ASM) data formats. This server enables AI assistants to validate instrument data files against ASM schemas and discover available ASMs.
 
@@ -26,14 +26,14 @@ This MCP server provides the following tools:
 
 ```bash
 # Clone the repository
-git clone git@ssh.gitlab.aws.dev:allotrope-as-a-service/allotrope-mcp-server.git
+git clone <your-repo-url>
 cd allotrope-mcp-server
 
 # Install dependencies
 uv sync
 
 # Run the server
-uv run awslabs.allotrope-mcp-server
+uv run allotrope-mcp-server
 ```
 
 ## Integration with Kiro
@@ -44,7 +44,7 @@ This repo includes a [Kiro Power](https://kiro.dev/docs/powers/) in the `power-i
 
 1. Open Kiro and go to the Powers panel (click the **Powers** icon in the sidebar, or run `View: Show Powers` from the command palette).
 2. Click **Add Custom Power** and then **Import power from a folder**. Select the `power-instrument-data-to-allotrope/` directory from this repo.
-3. Kiro will register the `awslabs.allotrope-mcp-server` MCP server automatically using the bundled `mcp.json`.
+3. Kiro will register the `allotrope-mcp-server` MCP server automatically using the bundled `mcp.json`.
 
 ### Use the Power
 
@@ -61,7 +61,7 @@ Kiro will guide you through schema discovery, data parsing, code generation, and
 Once configured in Kiro, you can use natural language to interact with the tools:
 
 - "List all available ASMs"
-- "Describe the absorbance ASM model"
+- "Describe the plate-reader ASM model"
 - "Validate this ASM document against the plate reader schema"
 - "Check if my instrument data file is valid ASM format"
 - "Fetch the plate reader embed schema document to my project"
@@ -177,7 +177,6 @@ uv run pyright
 
 - [Allotrope Foundation](https://www.allotrope.org/)
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
-- [AWS Labs MCP Servers](https://awslabs.github.io/mcp/)
 
 ## License
 
