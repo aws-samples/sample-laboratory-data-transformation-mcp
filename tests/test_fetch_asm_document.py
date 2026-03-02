@@ -45,7 +45,7 @@ def test_mirror_path_derivation_matches_expected(path_suffix: str, output_dir: s
     """Property: stripping PURL_ORIGIN and lstrip('/') then joining with output_dir
     must equal Path(output_dir) / path_suffix.lstrip('/').
 
-    For any URI ``http://purl.allotrope.org<path>``, the derived destination path
+    For any URI ``https://purl.allotrope.org<path>``, the derived destination path
     must equal ``Path(output_dir) / path.lstrip('/')``.
     """
     uri = PURL_ORIGIN + path_suffix
@@ -63,7 +63,7 @@ def test_mirror_path_derivation_matches_expected(path_suffix: str, output_dir: s
 class TestFetchAsmDocumentHttpErrors:
     """Unit tests for HTTP error handling in fetch_asm_document."""
 
-    VALID_URI = 'http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
+    VALID_URI = 'https://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
 
     async def test_http_error_returns_error_with_uri_and_status(self, mocker, tmp_path):
         """HTTPError returns {'error': ...} containing URI and status code."""
@@ -111,7 +111,7 @@ class TestFetchAsmDocumentHttpErrors:
 class TestFetchAsmDocumentWriter:
     """Unit tests for the Writer stage of fetch_asm_document."""
 
-    VALID_URI = 'http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
+    VALID_URI = 'https://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
     VALID_JSON = b'{"key": "value"}'
 
     def _mock_urlopen(self, mocker, body: bytes = VALID_JSON):
@@ -179,10 +179,10 @@ class TestFetchAsmDocumentWriter:
 class TestFetchAsmDocumentUriValidation:
     """Unit tests for URI prefix validation in fetch_asm_document."""
 
-    VALID_URI = 'http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
+    VALID_URI = 'https://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
 
     async def test_invalid_prefix_returns_error(self, mocker, tmp_path):
-        """URI without http://purl.allotrope.org prefix returns {'error': ...}."""
+        """URI without https://purl.allotrope.org prefix returns {'error': ...}."""
         spy = mocker.patch('urllib.request.urlopen')
         result = json.loads(
             await fetch_asm_document('https://example.com/some/schema.json', str(tmp_path))
@@ -227,7 +227,7 @@ class TestFetchAsmDocumentUriValidation:
 class TestFetchAsmDocumentSkipIfExists:
     """Unit tests for skip-if-exists behaviour in fetch_asm_document."""
 
-    VALID_URI = 'http://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
+    VALID_URI = 'https://purl.allotrope.org/json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
     MIRROR_PATH = 'json-schemas/adm/plate-reader/REC/2025/12/plate-reader.embed.schema'
 
     async def test_existing_file_returns_path_without_network_call(self, mocker, tmp_path):
@@ -268,12 +268,12 @@ class TestFetchAsmDocumentSkipIfExists:
 @given(uri=st.text(min_size=0, max_size=200))
 @settings(max_examples=500)
 async def test_non_purl_uri_always_returns_error(uri: str) -> None:
-    """Property: any string not starting with 'http://purl.allotrope.org' must
+    """Property: any string not starting with 'https://purl.allotrope.org' must
     always return an error response with no side effects.
     """
     from hypothesis import assume
 
-    assume(not uri.startswith('http://purl.allotrope.org'))
+    assume(not uri.startswith('https://purl.allotrope.org'))
 
     result = json.loads(await fetch_asm_document(uri, ''))
     assert 'error' in result

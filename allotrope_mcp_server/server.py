@@ -16,21 +16,22 @@
 
 import asyncio
 import json
+import logging
 import os
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass, field
 from jsonschema import Draft202012Validator
-import logging
-
-logger = logging.getLogger(__name__)
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 
 
+logger = logging.getLogger(__name__)
+
+
 HTTP_TIMEOUT_SECONDS = 30
 
-PURL_ORIGIN = "http://purl.allotrope.org"
+PURL_ORIGIN = "https://purl.allotrope.org"
 
 mcp = FastMCP(
     "allotrope-mcp-server",
@@ -71,7 +72,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
     """
     # Read document
     try:
-        with open(document_path) as f:
+        with open(document_path, encoding='utf-8') as f:
             document_text = f.read()
     except FileNotFoundError:
         return ValidationResult(
@@ -89,7 +90,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
 
     # Read schema
     try:
-        with open(schema_path) as f:
+        with open(schema_path, encoding='utf-8') as f:
             schema_text = f.read()
     except FileNotFoundError:
         return ValidationResult(
@@ -225,7 +226,7 @@ def _load_model_reference() -> dict | None:
     model_ref_path = Path(__file__).parent / "model_reference.json"
 
     try:
-        with open(model_ref_path) as f:
+        with open(model_ref_path, encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
         logger.error(f"Model reference file not found: {model_ref_path}")
@@ -255,7 +256,7 @@ async def list_asms() -> str:
         data = _load_model_reference()
         if data is None:
             try:
-                with open(model_ref_path) as f:
+                with open(model_ref_path, encoding='utf-8') as f:
                     f.read()
                 # File opened fine — must be malformed JSON
                 return json.dumps(
@@ -301,7 +302,7 @@ async def describe_asm(model_name: str) -> str:
         if reference is None:
             model_ref_path = Path(__file__).parent / "model_reference.json"
             try:
-                with open(model_ref_path) as f:
+                with open(model_ref_path, encoding='utf-8') as f:
                     f.read()
                 return json.dumps(
                     {

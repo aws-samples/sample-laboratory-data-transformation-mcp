@@ -15,11 +15,13 @@
 """Property-based tests for validate_asm_document and describe_asm."""
 
 import json
+import os
 import tempfile
 from allotrope_mcp_server.server import describe_asm, validate_asm_document
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from pathlib import Path
+
 
 # Load MODEL_REFERENCE once at module level for use in describe_asm property tests.
 _model_ref_path = Path(__file__).parent.parent / 'allotrope_mcp_server' / 'model_reference.json'
@@ -45,10 +47,14 @@ valid_documents = st.fixed_dictionaries({'name': st.text(min_size=0), 'age': st.
 
 def _write_tmp_json(data: object, suffix: str = '.json') -> str:
     """Write data as JSON to a temp file and return its path."""
-    f = tempfile.NamedTemporaryFile(mode='w', suffix=suffix, delete=False)
-    json.dump(data, f)
-    f.close()
-    return f.name
+    fd, path = tempfile.mkstemp(suffix=suffix)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f)
+    except Exception:
+        os.close(fd)
+        raise
+    return path
 
 
 @given(doc=valid_documents)
@@ -151,10 +157,14 @@ def _is_not_json(s: str) -> bool:
 
 def _write_tmp_text(content: str, suffix: str = '.json') -> str:
     """Write raw text to a temp file and return its path."""
-    f = tempfile.NamedTemporaryFile(mode='w', suffix=suffix, delete=False)
-    f.write(content)
-    f.close()
-    return f.name
+    fd, path = tempfile.mkstemp(suffix=suffix)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            f.write(content)
+    except Exception:
+        os.close(fd)
+        raise
+    return path
 
 
 @given(bad_json=_not_json)

@@ -16,7 +16,6 @@
 
 import json
 import os
-import tempfile
 from allotrope_mcp_server.server import (
     mcp,
     validate_asm,
@@ -84,31 +83,29 @@ class TestValidateAsmDocument:
         assert result.error_message is not None
         assert missing in result.error_message
 
-    def test_malformed_document_json(self):
+    def test_malformed_document_json(self, tmp_path):
         """Test that malformed JSON in the document returns an error."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write('{not valid json!!!')
-            tmp_path = f.name
+        tmp_file = tmp_path / 'malformed_doc.json'
+        tmp_file.write_text('{not valid json!!!', encoding='utf-8')
         try:
-            result = validate_asm_document(tmp_path, SCHEMA)
+            result = validate_asm_document(str(tmp_file), SCHEMA)
             assert result.is_valid is False
             assert result.error_message is not None
             assert 'malformed JSON' in result.error_message
         finally:
-            os.unlink(tmp_path)
+            tmp_file.unlink(missing_ok=True)
 
-    def test_malformed_schema_json(self):
+    def test_malformed_schema_json(self, tmp_path):
         """Test that malformed JSON in the schema returns an error."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write('{not valid json!!!')
-            tmp_path = f.name
+        tmp_file = tmp_path / 'malformed_schema.json'
+        tmp_file.write_text('{not valid json!!!', encoding='utf-8')
         try:
-            result = validate_asm_document(VALID_DOC, tmp_path)
+            result = validate_asm_document(VALID_DOC, str(tmp_file))
             assert result.is_valid is False
             assert result.error_message is not None
             assert 'malformed JSON' in result.error_message
         finally:
-            os.unlink(tmp_path)
+            tmp_file.unlink(missing_ok=True)
 
 
 class TestValidateAsmTool:
