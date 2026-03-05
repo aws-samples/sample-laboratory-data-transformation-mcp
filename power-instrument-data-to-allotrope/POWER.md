@@ -129,6 +129,31 @@ Use the `validate_asm` MCP tool to validate the generated JSON against the downl
 - If validation fails, you MUST inspect each error, correct the converter script, re-run it,
   and re-validate until the document is valid
 
+### 8. Generate Field Mapping Document
+
+Produce a markdown document that maps every source field from the instrument data file to its
+corresponding ASM destination field in the generated JSON.
+
+**Constraints:**
+
+- You MUST create the mapping document at `<output_path>.field-map.md` unless an explicit path is provided
+- You MUST include a table with at minimum the columns: `Source Field`, `Source Location`, `ASM Destination Path`, `Transformation`
+- You MUST cover all fields extracted in Step 4, including metadata fields and per-measurement fields
+- You MUST describe any transformation applied (e.g. timestamp normalisation, unit conversion, UUID generation, well ID assembly)
+- You SHOULD note whether each ASM destination field is required or optional according to the schema
+- You SHOULD add a brief prose introduction that names the source format, the target ASM model, and the schema URI used
+- You MUST NOT include fields that were discarded (e.g. blank lines, checksum rows) without explaining why they were excluded
+
+**Table format:**
+
+```markdown
+| Source Field | Source Location | ASM Destination Path | Transformation | Required |
+|---|---|---|---|---|
+| Instrument Brand | Header row, column 1 | `device system document > brand name` | None | Yes |
+| Timestamp | Header row, `Date` key | `measurement document > measurement time` | Normalise to ISO 8601 UTC | Yes |
+| Well Absorbance | Data grid cell | `measurement document > absorbance > value` | Cast to float | Yes |
+```
+
 ## Examples
 
 ### Plate Reader → ASM JSON
