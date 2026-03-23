@@ -56,6 +56,20 @@ Once installed, open a new chat and type `/` to browse available powers. Select 
 
 Kiro will guide you through schema discovery, data parsing, code generation, and validation against the ASM schema.
 
+### Use the Skill (Agent Skills standard)
+
+The repo also includes an [Agent Skill](https://kiro.dev/docs/skills/) at `.agents/skills/instrument-data-to-allotrope/SKILL.md`. Skills follow an open standard and can be imported into Kiro (or any compatible AI tool) independently of the Power.
+
+**Import into Kiro:**
+
+1. Open the **Agent Steering & Skills** section in the Kiro panel.
+2. Click **+** and select **Import a skill**.
+3. Choose **Local folder** and select the `.agents/skills/instrument-data-to-allotrope/` directory.
+
+The skill is copied to your Kiro skills directory and activates automatically when you ask Kiro to convert instrument data to ASM format. You can also invoke it explicitly by typing `/instrument-data-to-allotrope` in the chat input.
+
+> **Note:** The skill requires the `awslabs.allotrope-mcp-server` MCP server to be connected. Use the Power (above) to configure it automatically, or add the server manually via the MCP settings.
+
 ## Usage Examples
 
 Once configured in Kiro, you can use natural language to interact with the tools:
