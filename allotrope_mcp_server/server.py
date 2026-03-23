@@ -34,6 +34,9 @@ HTTP_TIMEOUT_SECONDS = 30
 
 PURL_ORIGIN = "https://purl.allotrope.org"
 
+# Maximum file size accepted by validate_asm for documents and schemas.
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
 mcp = FastMCP(
     "allotrope-mcp-server",
     instructions=(
@@ -65,47 +68,89 @@ class ValidationResult:
     error_message: str | None = None
 
 
+def _resolve_safe_path(raw_path: str, base_dir: Path) -> Path | None:
+    """Resolve ``raw_path`` and verify it is contained within ``base_dir``.
+
+    Args:
+        raw_path: Caller-supplied path string.
+        base_dir: The directory that the resolved path must reside within.
+
+    Returns:
+        The resolved ``Path`` if it is safe, or ``None`` if it escapes ``base_dir``.
+    """
+    resolved = Path(raw_path).resolve()
+    try:
+        resolved.relative_to(base_dir.resolve())
+        return resolved
+    except ValueError:
+        return None
+
+
+def _resolve_no_traversal(raw_path: str) -> Path:
+    """Resolve ``raw_path`` to an absolute path, eliminating any ``..`` components.
+
+    Args:
+        raw_path: Caller-supplied path string.
+
+    Returns:
+        The canonicalised absolute ``Path``.
+    """
+    return Path(raw_path).resolve()
+
+
 def validate_asm_document(document_path: str, schema_path: str) -> ValidationResult:
     """Validate an ASM JSON document against a JSON Schema.
 
     Reads both files, validates using Draft 2020-12, and returns a
     structured result. Never raises exceptions.
     """
+    # Canonicalise paths to eliminate any '..' traversal sequences.
+    safe_document = _resolve_no_traversal(document_path)
+    safe_schema = _resolve_no_traversal(schema_path)
+
     # Read document
     try:
-        with open(document_path, encoding="utf-8") as f:
-            document_text = f.read()
+        doc_size = safe_document.stat().st_size
     except FileNotFoundError:
+        return ValidationResult(is_valid=False, error_message='Document file not found')
+
+    if doc_size > MAX_FILE_SIZE_BYTES:
         return ValidationResult(
             is_valid=False,
-            error_message=f"Document file not found: {document_path}",
+            error_message=f'Document file exceeds maximum allowed size of {MAX_FILE_SIZE_BYTES} bytes',
         )
+
+    try:
+        document_text = safe_document.read_text(encoding='utf-8')
+    except OSError:
+        return ValidationResult(is_valid=False, error_message='Failed to read document file')
 
     try:
         document = json.loads(document_text)
     except json.JSONDecodeError:
-        return ValidationResult(
-            is_valid=False,
-            error_message=f"Document file contains malformed JSON: {document_path}",
-        )
+        return ValidationResult(is_valid=False, error_message='Document file contains malformed JSON')
 
     # Read schema
     try:
-        with open(schema_path, encoding="utf-8") as f:
-            schema_text = f.read()
+        schema_size = safe_schema.stat().st_size
     except FileNotFoundError:
+        return ValidationResult(is_valid=False, error_message='Schema file not found')
+
+    if schema_size > MAX_FILE_SIZE_BYTES:
         return ValidationResult(
             is_valid=False,
-            error_message=f"Schema file not found: {schema_path}",
+            error_message=f'Schema file exceeds maximum allowed size of {MAX_FILE_SIZE_BYTES} bytes',
         )
+
+    try:
+        schema_text = safe_schema.read_text(encoding='utf-8')
+    except OSError:
+        return ValidationResult(is_valid=False, error_message='Failed to read schema file')
 
     try:
         schema = json.loads(schema_text)
     except json.JSONDecodeError:
-        return ValidationResult(
-            is_valid=False,
-            error_message=f"Schema file contains malformed JSON: {schema_path}",
-        )
+        return ValidationResult(is_valid=False, error_message='Schema file contains malformed JSON')
 
     # Validate
     validator = Draft202012Validator(schema)
@@ -169,12 +214,14 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
                 }
             )
 
-        base_dir = output_dir if output_dir else os.getcwd()
+        base_dir = Path(output_dir if output_dir else os.getcwd()).resolve()
         mirror_path = asm_document_uri[len(PURL_ORIGIN) :].lstrip("/")
-        dest = Path(base_dir) / mirror_path
+        dest = _resolve_safe_path(str(base_dir / mirror_path), base_dir)
+        if dest is None:
+            return json.dumps({"error": "output_dir resolves outside the permitted base directory"})
 
         if dest.exists():
-            return json.dumps({"path": str(dest.resolve())})
+            return json.dumps({"path": str(dest)})
 
         # Downloader — only https:// is permitted; file:// and other schemes are rejected.
         parsed_uri = urllib.parse.urlparse(asm_document_uri)
@@ -219,10 +266,10 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
         try:
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        except OSError as exc:
-            return json.dumps({"error": f"Failed to write document to {dest}: {exc}"})
+        except OSError:
+            return json.dumps({"error": "Failed to write document to the output directory"})
 
-        return json.dumps({"path": str(dest.resolve())})
+        return json.dumps({"path": str(dest)})
 
     except Exception as exc:
         return json.dumps({"error": str(exc)})

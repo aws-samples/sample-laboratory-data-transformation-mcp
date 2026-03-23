@@ -122,14 +122,14 @@ _nonexistent_paths = st.text(
 @given(bad_path=_nonexistent_paths)
 @settings(max_examples=100)
 def test_nonexistent_file_path_returns_identifying_error(bad_path: str) -> None:
-    """Property 3: Non-existent file path returns identifying error."""
+    """Property 3: Non-existent file path returns an error without leaking the path."""
     # Use bad path as document, with a valid schema on disk
     schema_path = _write_tmp_json(TEST_SCHEMA)
     try:
         result = validate_asm_document(bad_path, schema_path)
         assert result.is_valid is False
         assert result.error_message is not None
-        assert bad_path in result.error_message
+        assert 'not found' in result.error_message
     finally:
         Path(schema_path).unlink(missing_ok=True)
 
@@ -139,7 +139,7 @@ def test_nonexistent_file_path_returns_identifying_error(bad_path: str) -> None:
         result = validate_asm_document(doc_path, bad_path)
         assert result.is_valid is False
         assert result.error_message is not None
-        assert bad_path in result.error_message
+        assert 'not found' in result.error_message
     finally:
         Path(doc_path).unlink(missing_ok=True)
 
@@ -172,7 +172,7 @@ def _write_tmp_text(content: str, suffix: str = '.json') -> str:
 @given(bad_json=_not_json)
 @settings(max_examples=100)
 def test_malformed_document_json_returns_document_specific_error(bad_json: str) -> None:
-    """Property 4: Malformed document JSON returns document-specific error."""
+    """Property 4: Malformed document JSON returns document-specific error without leaking path."""
     doc_path = _write_tmp_text(bad_json)
     schema_path = _write_tmp_json(TEST_SCHEMA)
     try:
@@ -180,7 +180,7 @@ def test_malformed_document_json_returns_document_specific_error(bad_json: str) 
         assert result.is_valid is False
         assert result.error_message is not None
         assert 'malformed json' in result.error_message.lower()
-        assert doc_path in result.error_message
+        assert doc_path not in result.error_message
     finally:
         Path(doc_path).unlink(missing_ok=True)
         Path(schema_path).unlink(missing_ok=True)
@@ -189,7 +189,7 @@ def test_malformed_document_json_returns_document_specific_error(bad_json: str) 
 @given(bad_json=_not_json)
 @settings(max_examples=100)
 def test_malformed_schema_json_returns_schema_specific_error(bad_json: str) -> None:
-    """Property 5: Malformed schema JSON returns schema-specific error."""
+    """Property 5: Malformed schema JSON returns schema-specific error without leaking path."""
     doc_path = _write_tmp_json({'name': 'x', 'age': 1})
     schema_path = _write_tmp_text(bad_json)
     try:
@@ -197,7 +197,7 @@ def test_malformed_schema_json_returns_schema_specific_error(bad_json: str) -> N
         assert result.is_valid is False
         assert result.error_message is not None
         assert 'malformed json' in result.error_message.lower()
-        assert schema_path in result.error_message
+        assert schema_path not in result.error_message
     finally:
         Path(doc_path).unlink(missing_ok=True)
         Path(schema_path).unlink(missing_ok=True)

@@ -63,3 +63,4 @@ target/
 # Other
 .DS_Store
 json-schema
+.threatmodel

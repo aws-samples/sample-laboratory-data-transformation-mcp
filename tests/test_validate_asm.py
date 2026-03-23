@@ -73,7 +73,7 @@ class TestValidateAsmDocument:
         result = validate_asm_document(missing, SCHEMA)
         assert result.is_valid is False
         assert result.error_message is not None
-        assert missing in result.error_message
+        assert 'not found' in result.error_message
 
     def test_schema_file_not_found(self, tmp_path):
         """Test that a missing schema file returns an error."""
@@ -81,7 +81,7 @@ class TestValidateAsmDocument:
         result = validate_asm_document(VALID_DOC, missing)
         assert result.is_valid is False
         assert result.error_message is not None
-        assert missing in result.error_message
+        assert 'not found' in result.error_message
 
     def test_malformed_document_json(self, tmp_path):
         """Test that malformed JSON in the document returns an error."""
@@ -106,6 +106,54 @@ class TestValidateAsmDocument:
             assert 'malformed JSON' in result.error_message
         finally:
             tmp_file.unlink(missing_ok=True)
+
+    def test_document_exceeds_size_limit(self, tmp_path):
+        """Test that a document exceeding the size limit returns an error."""
+        from allotrope_mcp_server.server import MAX_FILE_SIZE_BYTES
+        big_file = tmp_path / 'big_doc.json'
+        # Write a file just over the limit (content doesn't need to be valid JSON).
+        big_file.write_bytes(b'x' * (MAX_FILE_SIZE_BYTES + 1))
+        result = validate_asm_document(str(big_file), SCHEMA)
+        assert result.is_valid is False
+        assert result.error_message is not None
+        assert 'exceeds maximum' in result.error_message
+
+    def test_schema_exceeds_size_limit(self, tmp_path):
+        """Test that a schema exceeding the size limit returns an error."""
+        from allotrope_mcp_server.server import MAX_FILE_SIZE_BYTES
+        big_file = tmp_path / 'big_schema.json'
+        big_file.write_bytes(b'x' * (MAX_FILE_SIZE_BYTES + 1))
+        result = validate_asm_document(VALID_DOC, str(big_file))
+        assert result.is_valid is False
+        assert result.error_message is not None
+        assert 'exceeds maximum' in result.error_message
+
+
+class TestValidateAsmDocumentPathTraversal:
+    """Tests that path traversal sequences are neutralised."""
+
+    def test_document_path_with_dotdot_is_canonicalised(self, tmp_path):
+        """A document path containing '..' is resolved before use, not rejected."""
+        # Build a path that uses '..' but ultimately resolves to a real file.
+        doc = tmp_path / 'doc.json'
+        doc.write_text('{}', encoding='utf-8')
+        schema = tmp_path / 'schema.json'
+        schema.write_text('{}', encoding='utf-8')
+        # Construct a path with '..' that still resolves to the same file.
+        traversal_doc = str(tmp_path / 'subdir' / '..' / 'doc.json')
+        result = validate_asm_document(traversal_doc, str(schema))
+        # Should succeed (empty doc is valid against empty schema).
+        assert result.error_message is None or 'not found' not in (result.error_message or '')
+
+    def test_schema_path_with_dotdot_is_canonicalised(self, tmp_path):
+        """A schema path containing '..' is resolved before use, not rejected."""
+        doc = tmp_path / 'doc.json'
+        doc.write_text('{}', encoding='utf-8')
+        schema = tmp_path / 'schema.json'
+        schema.write_text('{}', encoding='utf-8')
+        traversal_schema = str(tmp_path / 'subdir' / '..' / 'schema.json')
+        result = validate_asm_document(str(doc), traversal_schema)
+        assert result.error_message is None or 'not found' not in (result.error_message or '')
 
 
 class TestValidateAsmTool:
