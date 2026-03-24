@@ -95,7 +95,55 @@ the ASM document.
 - You MUST normalise the timestamp to ISO 8601 format with UTC timezone offset (`+00:00`)
 - You MUST NOT silently drop records — skip only blank lines and known footer entries (e.g. `Checksum`)
 
-### 5. Write the Converter Script
+### 5. Standardize the Source Data
+
+Convert the parsed source data into a generic intermediate JSON representation and save it to
+`<input_path>.intermediate.json`. This file provides a format-agnostic snapshot of the raw data
+that can be used for auditing, debugging, and downstream validation independent of any ASM schema.
+
+The intermediate JSON must be as generic as possible so it can represent data from any instrument
+type or file format (CSV, TSV, XML, proprietary binary exports, etc.).
+
+Use the following top-level structure:
+
+```json
+{
+  "source_file": "<original input file path>",
+  "format": "<detected format, e.g. csv, tsv, xml>",
+  "metadata": {
+    "<key>": "<value>"
+  },
+  "data": [
+    {
+      "<field_name>": "<value>"
+    }
+  ]
+}
+```
+
+Field definitions:
+
+- `source_file`: The absolute or relative path to the original instrument data file.
+- `format`: A short lowercase string identifying the detected file format (e.g. `csv`, `tsv`, `xml`, `txt`).
+- `metadata`: A flat key/value object containing all header-level or file-level fields extracted in Step 4
+  (e.g. instrument brand, model, serial number, timestamp). Values MUST be strings.
+- `data`: An array of objects, one per discrete measurement or data record. Each object uses flat
+  key/value pairs with string keys and scalar values (string, number, or null). Do not nest objects
+  inside `data` entries — flatten any hierarchical source structure.
+
+**Constraints:**
+
+- You MAY skip this step if the source file is already in JSON format (i.e. `input_path` ends in `.json` or file content parses as valid JSON) — proceed directly to Step 6
+- You MUST write the intermediate JSON to `<input_path>.intermediate.json` unless an explicit path is provided
+- You MUST include every field extracted in Step 4 — do not omit or summarise records
+- You MUST ensure no data from the raw source file is lost — every value, including headers, metadata, and all measurement records, MUST appear in the intermediate JSON
+- You MUST use only generic field names derived from the source data (e.g. `row`, `column`, `value`); do NOT use ASM-specific terminology in this file
+- You MUST ensure all values in `metadata` are strings; cast numbers and dates as needed
+- You MUST ensure the file is valid, pretty-printed JSON (indent = 2)
+- You SHOULD preserve the original field names from the source data where they are meaningful
+- You MUST NOT include any ASM-specific keys or structure in this file
+
+### 6. Write the Converter Script
 
 Implement a Python script that reads the source data (Step 4) and writes a conformant ASM JSON file.
 
@@ -108,7 +156,7 @@ Implement a Python script that reads the source data (Step 4) and writes a confo
 - You SHOULD include Google-style docstrings on all public functions
 - You MUST NOT hard-code instrument metadata — derive it from the source data header
 
-### 6. Run the Converter
+### 7. Run the Converter
 
 Execute the script against the source data to produce the ASM JSON output file.
 
@@ -117,7 +165,7 @@ Execute the script against the source data to produce the ASM JSON output file.
 - You MUST verify the script exits with code 0
 - You MUST confirm the output file exists and contains well-formed JSON before proceeding
 
-### 7. Validate Against the Schema
+### 8. Validate Against the Schema
 
 Use the `validate_asm` MCP tool to validate the generated JSON against the downloaded schema.
 
@@ -129,7 +177,7 @@ Use the `validate_asm` MCP tool to validate the generated JSON against the downl
 - If validation fails, you MUST inspect each error, correct the converter script, re-run it,
   and re-validate until the document is valid
 
-### 8. Generate Field Mapping Document
+### 9. Generate Field Mapping Document
 
 Produce a markdown document that maps every source field from the instrument data file to its
 corresponding ASM destination field in the generated JSON.
@@ -138,7 +186,7 @@ corresponding ASM destination field in the generated JSON.
 
 - You MUST create the mapping document at `<output_path>.field-map.md` unless an explicit path is provided
 - You MUST include a table with at minimum the columns: `Source Field`, `Source Location`, `ASM Destination Path`, `Transformation`
-- You MUST cover all fields extracted in Step 4, including metadata fields and per-measurement fields
+- You MUST cover all fields extracted in Step 4 and standardized in Step 5, including metadata fields and per-measurement fields
 - You MUST describe any transformation applied (e.g. timestamp normalisation, unit conversion, UUID generation, well ID assembly)
 - You SHOULD note whether each ASM destination field is required or optional according to the schema
 - You SHOULD add a brief prose introduction that names the source format, the target ASM model, and the schema URI used
