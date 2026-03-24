@@ -22,7 +22,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass, field
-from jsonschema import Draft202012Validator
+import jsonschema_rs
 from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 
@@ -44,7 +44,7 @@ mcp = FastMCP(
         " standardized Allotrope Simple Model (ASM) format."
     ),
     dependencies=[
-        "jsonschema",
+        "jsonschema-rs",
         "pydantic",
     ],
 )
@@ -153,15 +153,15 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
         return ValidationResult(is_valid=False, error_message='Schema file contains malformed JSON')
 
     # Validate
-    validator = Draft202012Validator(schema)
+    validator = jsonschema_rs.Draft202012Validator(schema)
     errors = [
         ValidationError(
-            path=".".join(str(p) for p in err.absolute_path) or "(root)",
+            path=".".join(str(p) for p in err.instance_path) or "(root)",
             message=err.message,
-            validator=err.validator,
+            validator=err.kind.name,
         )
         for err in sorted(
-            validator.iter_errors(document), key=lambda e: list(e.absolute_path)
+            validator.iter_errors(document), key=lambda e: list(e.instance_path)
         )
     ]
 
