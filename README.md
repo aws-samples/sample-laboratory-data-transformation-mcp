@@ -13,7 +13,7 @@ This MCP server provides the following tools:
 - **describe_asm**: Retrieve full metadata for a specific ASM model by name, including its description, manifest URL, JSON schema URL, and data instance example URLs
 - **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from a bundled reference file
-- **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to ensure data compliance
+- **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to verify data compliance
 
 ## Installation
 
@@ -166,6 +166,41 @@ Validates an ASM JSON document against its corresponding JSON schema.
 | `asm_document_path` | string | Yes | Path to the ASM JSON document to validate |
 | `asm_schema_path` | string | Yes | Path to the ASM JSON schema to validate against |
 
+## Security Considerations
+
+### What the server provides
+
+- **Path traversal protection** — `validate_asm` and `fetch_asm_document` resolve and sanitise all caller-supplied file paths. Paths that escape the intended working directory are rejected before any file I/O occurs.
+- **HTTPS-only external requests** — `fetch_asm_document` enforces a hard-coded `http://purl.allotrope.org` URI prefix check. Any URI that does not match this origin is rejected without making a network call.
+- **File size limits** — `validate_asm` enforces a maximum file size before reading documents or schemas into memory, preventing resource exhaustion from oversized inputs.
+- **Recursive schema depth limit** — JSON Schema validation caps recursion depth to guard against stack overflow or CPU exhaustion from schemas with circular `$ref` cycles.
+- **Error message sanitisation** — internal filesystem paths and stack traces are stripped from error responses returned to the MCP client.
+
+### What you are responsible for
+
+- **Securing your local environment** — the server runs as a local process with the same filesystem permissions as the invoking user. Ensure your machine, user account, and any Docker container running the server are appropriately hardened.
+- **Validating AI assistant behavior** — the server trusts all tool arguments passed by the MCP client without authenticating the caller. A compromised or misbehaving AI assistant could supply malicious file paths or URIs. Review tool invocations in your IDE and treat unexpected calls as suspicious.
+- **Prompt injection awareness** — content fetched from `purl.allotrope.org` or read from local files is returned to the AI assistant. Malicious content in those files could attempt to influence subsequent assistant actions (indirect prompt injection). Only point the server at files and URIs you trust. See [Prompt Injection](#prompt-injection) below for details.
+- **Supply chain hygiene** — install the package from the official PyPI release and pin dependency versions using `uv.lock`. Verify that your Python environment has not been tampered with before running the server.
+- **No authentication layer** — the MCP stdio interface has no built-in authentication. If you expose the server beyond a local process (e.g. via a network socket), you are responsible for adding appropriate access controls.
+
+### Prompt Injection
+
+The MCP server passes tool arguments supplied by an AI assistant directly to filesystem and network operations. Because the server cannot distinguish a legitimate assistant request from one that has been manipulated by malicious content, **all MCP tool arguments must be treated as untrusted input**.
+
+Indirect prompt injection can occur when:
+
+- A document or schema file read by `validate_asm` contains embedded instructions that the AI assistant interprets as commands.
+- A JSON document fetched from `purl.allotrope.org` by `fetch_asm_document` contains text that causes the assistant to invoke further tool calls with attacker-controlled arguments.
+- An AI agent loop passes the output of one tool call as the input path or URI of the next without human review.
+
+**Recommended mitigations for MCP client operators:**
+
+- Review tool invocations before approving them, especially calls that supply file paths or URIs you did not explicitly request.
+- Avoid chaining tool outputs directly into subsequent tool inputs without inspecting the intermediate content.
+- Restrict the working directory available to the server so that even a successful path traversal attempt cannot reach sensitive files outside the project.
+- Treat any unexpected or unsolicited tool call as a potential injection attempt and abort the session.
+
 ## Development
 
 ### Running Tests
@@ -195,3 +230,5 @@ uv run pyright
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+
+The Allotrope Foundation® Simple Models (“ASM”) and other data is collectively licensed under three licenses, depending on intended usage and membership status. Please visit https://gitlab.com/allotrope-public/asm/-/blob/main/LICENSE.md for more information.

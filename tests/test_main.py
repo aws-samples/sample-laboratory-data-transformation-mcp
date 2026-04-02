@@ -35,7 +35,7 @@ class TestMain:
     def test_module_execution(self):
         """Test the module execution when run as __main__."""
         # This test directly executes the code in the if __name__ == '__main__': block
-        # to ensure coverage of that line
+        # to verify coverage of that line
 
         # Get the source code of the module
         import inspect
@@ -48,6 +48,6 @@ class TestMain:
         assert 'if __name__ == "__main__":' in source
         assert 'main()' in source
 
-        # This test doesn't actually execute the code, but it ensures
+        # This test doesn't actually execute the code, but it verifies
         # that the coverage report includes the if __name__ == '__main__': line
         # by explicitly checking for its presence

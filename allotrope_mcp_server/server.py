@@ -193,7 +193,7 @@ async def fetch_asm_document(asm_document_uri: str, output_dir: str = "") -> str
     Downloads the document identified by ``asm_document_uri`` from the Allotrope
     PURL repository and saves it to the local filesystem at a path that mirrors
     the URI structure.  If the file already exists it is returned immediately
-    without re-downloading.  Unlike ``get_asm_schema``, ``$ref`` references are
+    without re-downloading. ``$ref`` references are
     NOT resolved — the document is saved exactly as received.
 
     Args:
