@@ -36,17 +36,60 @@ uv sync
 uv run allotrope-mcp-server
 ```
 
-## Integration with Kiro
+## Workflow Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client as MCP Client<br/>(AI Assistant / IDE)
+    participant Server as allotrope-mcp-server<br/>(FastMCP / stdio)
+    participant FS as Local Filesystem
+    participant Ref as model_reference.json<br/>(bundled)
+    participant PURL as purl.allotrope.org<br/>(HTTPS)
+
+    Note over Client,Server: Trust Boundary: stdio (no auth)
+
+    Client->>Server: list_asms()
+    Server->>Ref: read model_reference.json
+    Ref-->>Server: ASM name → description map
+    Server-->>Client: JSON result
+
+    Client->>Server: describe_asm(model_name)
+    Server->>Ref: lookup model_name
+    Ref-->>Server: metadata (URIs, description)
+    Server-->>Client: JSON result
+
+    Client->>Server: validate_asm(asm_document_path, asm_schema_path)
+    Note over Server,FS: Path traversal risk (T1) — sanitised by M1
+    Server->>FS: read asm_document_path
+    FS-->>Server: ASM JSON document
+    Server->>FS: read asm_schema_path
+    FS-->>Server: JSON Schema
+    Server->>Server: validate document against schema
+    Server-->>Client: validation result
+
+    Client->>Server: fetch_asm_document(asm_document_uri, output_dir)
+    Note over Server: URI prefix check (PURL_ORIGIN allowlist — A002)
+    Note over Server,PURL: TLS encrypted (CN001) — MitM risk (T5)
+    Server->>PURL: GET asm_document_uri (HTTPS)
+    PURL-->>Server: ASM JSON document
+    Note over Server,FS: Arbitrary write risk (T2) — sanitised by M1
+    Server->>FS: write to output_dir/<path>
+    Server-->>Client: saved file path
+```
+
+## Integration with AI coding tools
+
+### Kiro
 
 This repo includes a [Kiro Power](https://kiro.dev/docs/powers/) in the `power-instrument-data-to-allotrope/` folder. The power bundles the MCP server configuration and a guided workflow for converting laboratory instrument data into valid ASM JSON.
 
-### Install the Power
+#### Install the Power
 
 1. Open Kiro and go to the Powers panel (click the **Powers** icon in the sidebar, or run `View: Show Powers` from the command palette).
 2. Click **Add Custom Power** and then **Import power from a folder**. Select the `power-instrument-data-to-allotrope/` directory from this repo.
 3. Kiro will register the `allotrope-mcp-server` MCP server automatically using the bundled `mcp.json`.
 
-### Use the Power
+#### Use the Power
 
 Once installed, open a new chat and type `/` to browse available powers. Select **Instrument Data to Allotrope** and provide:
 
@@ -56,11 +99,11 @@ Once installed, open a new chat and type `/` to browse available powers. Select 
 
 Kiro will guide you through schema discovery, data parsing, code generation, and validation against the ASM schema.
 
-### Use the Skill (Agent Skills standard)
+### Agent Skill
 
 The repo also includes an [Agent Skill](https://kiro.dev/docs/skills/) at `.agents/skills/instrument-data-to-allotrope/SKILL.md`. Skills follow an open standard and can be imported into Kiro (or any compatible AI tool) independently of the Power.
 
-**Import into Kiro:**
+#### Import into Kiro
 
 1. Open the **Agent Steering & Skills** section in the Kiro panel.
 2. Click **+** and select **Import a skill**.
