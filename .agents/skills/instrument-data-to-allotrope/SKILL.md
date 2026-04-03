@@ -1,7 +1,7 @@
 ---
 name: instrument-data-to-allotrope
 description: Creates Python converter code to transform laboratory instrument data into Allotrope Simple Model (ASM) JSON format. Use when a user asks to convert instrument data to ASM, generate an ASM data instance, write a plate reader converter, map instrument CSV to Allotrope, or validate ASM output. Requires the allotrope-mcp-server MCP server to be connected.
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: AWS Labs
   version: 1.0.0
@@ -145,7 +145,6 @@ Implement a Python script that reads the source data and writes a conformant ASM
 
 Constraints:
 
-- MUST include the Apache-2.0 license header at the top of the file
 - MUST generate a fresh UUID for `ASM file identifier` on each run
 - MUST map well positions to `<column><row>` identifiers (e.g. column `A`, row `1` → `A1`)
 - SHOULD accept `input_path` and `output_path` as optional CLI arguments with sensible defaults

@@ -272,6 +272,6 @@ uv run pyright
 
 ## License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT-0 license. See the [LICENSE](LICENSE) file for details.
 
 The Allotrope Foundation® Simple Models (“ASM”) and other data is collectively licensed under three licenses, depending on intended usage and membership status. Please visit https://gitlab.com/allotrope-public/asm/-/blob/main/LICENSE.md for more information.

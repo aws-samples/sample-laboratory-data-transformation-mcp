@@ -149,7 +149,6 @@ Implement a Python script that reads the source data (Step 4) and writes a confo
 
 **Constraints:**
 
-- You MUST include the Apache-2.0 license header at the top of the file
 - You MUST generate a fresh UUID for `ASM file identifier` on each run
 - You MUST map well positions to `<column><row>` identifiers (e.g. column `A`, row `1` → `A1`)
 - You SHOULD accept `input_path` and `output_path` as optional CLI arguments with sensible defaults
