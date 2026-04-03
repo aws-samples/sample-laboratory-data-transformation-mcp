@@ -22,7 +22,29 @@ This MCP server provides the following tools:
 - Python 3.10 or higher
 - [uv](https://docs.astral.sh/uv/) package manager
 
-### Setup
+### Install MCP server
+
+Add the following configuration to your MCP client to download and install the server.
+
+```json
+{
+  "mcpServers": {
+    "allotrope-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/aws-samples/sample-laboratory-data-transformation-mcp.git",
+        "allotrope-mcp-server"
+      ],
+      "disabled": false,
+      "autoApprove": [],
+      "disabledTools": []
+    }
+  }
+}
+```
+
+### Setup for local development
 
 ```bash
 # Clone the repository
@@ -103,15 +125,7 @@ Kiro will guide you through schema discovery, data parsing, code generation, and
 
 The repo also includes an [Agent Skill](https://kiro.dev/docs/skills/) at `.agents/skills/instrument-data-to-allotrope/SKILL.md`. Skills follow an open standard and can be imported into Kiro (or any compatible AI tool) independently of the Power.
 
-#### Import into Kiro
-
-1. Open the **Agent Steering & Skills** section in the Kiro panel.
-2. Click **+** and select **Import a skill**.
-3. Choose **Local folder** and select the `.agents/skills/instrument-data-to-allotrope/` directory.
-
-The skill is copied to your Kiro skills directory and activates automatically when you ask Kiro to convert instrument data to ASM format. You can also invoke it explicitly by typing `/instrument-data-to-allotrope` in the chat input.
-
-> **Note:** The skill requires the `awslabs.allotrope-mcp-server` MCP server to be connected. Use the Power (above) to configure it automatically, or add the server manually via the MCP settings.
+> **Note:** The skill requires the `allotrope-mcp-server` MCP server to be connected. Use the Power (above) to configure it automatically, or add the server manually via the MCP settings.
 
 ## Usage Examples
 

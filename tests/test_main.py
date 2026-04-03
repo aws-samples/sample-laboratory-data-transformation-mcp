@@ -11,7 +11,7 @@ class TestMain:
     """Tests for the main function."""
 
     @patch('allotrope_mcp_server.server.mcp.run')
-    @patch('sys.argv', ['awslabs.allotrope-mcp-server'])
+    @patch('sys.argv', ['allotrope-mcp-server'])
     def test_main_default(self, mock_run):
         """Test main function with default arguments."""
         # Call the main function

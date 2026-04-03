@@ -1,9 +1,10 @@
 {
   "mcpServers": {
-    "awslabs.allotrope-mcp-server": {
-      "command": "uv",
+    "allotrope-mcp-server": {
+      "command": "uvx",
       "args": [
-        "run",
+        "--from",
+        "git+https://github.com/aws-samples/sample-laboratory-data-transformation-mcp.git",
         "allotrope-mcp-server"
       ],
       "disabled": false,
