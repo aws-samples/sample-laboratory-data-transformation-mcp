@@ -8,11 +8,11 @@ metadata:
   mcp-server: allotrope-mcp-server
 ---
 
-# Instrument Data to Allotrope
+# Convert Instrument Data to ASM Data Instance
 
 Converts raw laboratory instrument data into a valid Allotrope Simple Model (ASM) JSON data
 instance that conforms to the target ASM schema. Covers schema discovery, data parsing, JSON
-generation, schema validation, and field mapping documentation.
+generation, and schema validation.
 
 ## ASM Document Structure
 
@@ -121,29 +121,6 @@ Constraints:
 - MUST pass the schema path from Step 2 as `asm_schema_path`
 - MUST confirm `is_valid` is `true` and `errors` is empty before considering the task complete
 - If validation fails, MUST inspect each error, correct the converter, re-run, and re-validate until valid
-
-### Step 8: Generate Field Mapping Document
-
-Produce a markdown document mapping every source field to its ASM destination.
-
-Constraints:
-
-- MUST create the mapping at `<output_path>.field-map.md` unless an explicit path is provided
-- MUST include a table with columns: `Source Field`, `Source Location`, `ASM Destination Path`, `Transformation`, `Required`
-- MUST cover all fields extracted in Step 4 and standardized in Step 5 (metadata and per-measurement)
-- MUST describe any transformation applied (timestamp normalisation, unit conversion, UUID generation, well ID assembly)
-- MUST NOT omit discarded fields without explaining why they were excluded
-- SHOULD add a brief prose introduction naming the source format, target ASM model, and schema URI
-
-Table format:
-
-```markdown
-| Source Field | Source Location | ASM Destination Path | Transformation | Required |
-|---|---|---|---|---|
-| Instrument Brand | Header row, column 1 | `device system document > brand name` | None | Yes |
-| Timestamp | Header row, `Date` key | `measurement document > measurement time` | Normalise to ISO 8601 UTC | Yes |
-| Well Absorbance | Data grid cell | `measurement document > absorbance > value` | Cast to float | Yes |
-```
 
 ## Examples
 
