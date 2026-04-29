@@ -23,7 +23,7 @@ HTTP_TIMEOUT_SECONDS = 30
 
 PURL_ORIGIN = "https://purl.allotrope.org"
 
-# Maximum file size accepted by validate_asm for documents and schemas.
+# Maximum file size accepted by validate_asm_schema for documents and schemas.
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 mcp = FastMCP(
@@ -158,7 +158,7 @@ def validate_asm_document(document_path: str, schema_path: str) -> ValidationRes
 
 
 @mcp.tool()
-def validate_asm(asm_document_path: str, asm_schema_path: str) -> str:
+def validate_asm_schema(asm_document_path: str, asm_schema_path: str) -> str:
     """Validate an ASM JSON document against an Allotrope JSON Schema.
 
     Args:

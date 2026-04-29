@@ -13,7 +13,7 @@ This MCP server provides the following tools:
 - **describe_asm**: Retrieve full metadata for a specific ASM model by name, including its description, manifest URL, JSON schema URL, and data instance example URLs
 - **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from a bundled reference file
-- **validate_asm**: Validate ASM JSON documents against their corresponding JSON schemas to verify data compliance
+- **validate_asm_schema**: Validate ASM JSON documents against their corresponding JSON schemas to verify data compliance
 
 ## Installation
 
@@ -80,7 +80,7 @@ sequenceDiagram
     Ref-->>Server: metadata (URIs, description)
     Server-->>Client: JSON result
 
-    Client->>Server: validate_asm(asm_document_path, asm_schema_path)
+    Client->>Server: validate_asm_schema(asm_document_path, asm_schema_path)
     Note over Server,FS: Path traversal risk (T1) — sanitised by M1
     Server->>FS: read asm_document_path
     FS-->>Server: ASM JSON document
@@ -144,7 +144,7 @@ You: Validate tests/testdata/plate_reader_weyland_yutani_valid.json
      against tests/testdata/plate_reader.embed.schema.json
 ```
 
-Kiro will use the `validate_asm` tool to check the document and report any validation errors.
+Kiro will use the `validate_asm_schema` tool to check the document and report any validation errors.
 
 ### Example: Fetching a Raw ASM Document
 
@@ -212,7 +212,7 @@ Lists all available Allotrope Simple Models (ASMs) with their descriptions. Read
 
 **Returns:** A JSON object mapping ASM identifiers to their descriptions, or an `error` key on failure.
 
-### validate_asm
+### validate_asm_schema
 
 Validates an ASM JSON document against its corresponding JSON schema.
 
@@ -227,9 +227,9 @@ Validates an ASM JSON document against its corresponding JSON schema.
 
 ### What the server provides
 
-- **Path traversal protection** — `validate_asm` and `fetch_asm_document` resolve and sanitise all caller-supplied file paths. Paths that escape the intended working directory are rejected before any file I/O occurs.
+- **Path traversal protection** — `validate_asm_schema` and `fetch_asm_document` resolve and sanitise all caller-supplied file paths. Paths that escape the intended working directory are rejected before any file I/O occurs.
 - **HTTPS-only external requests** — `fetch_asm_document` enforces a hard-coded `http://purl.allotrope.org` URI prefix check. Any URI that does not match this origin is rejected without making a network call.
-- **File size limits** — `validate_asm` enforces a maximum file size before reading documents or schemas into memory, preventing resource exhaustion from oversized inputs.
+- **File size limits** — `validate_asm_schema` enforces a maximum file size before reading documents or schemas into memory, preventing resource exhaustion from oversized inputs.
 - **Recursive schema depth limit** — JSON Schema validation caps recursion depth to guard against stack overflow or CPU exhaustion from schemas with circular `$ref` cycles.
 - **Error message sanitisation** — internal filesystem paths and stack traces are stripped from error responses returned to the MCP client.
 
@@ -247,7 +247,7 @@ The MCP server passes tool arguments supplied by an AI assistant directly to fil
 
 Indirect prompt injection can occur when:
 
-- A document or schema file read by `validate_asm` contains embedded instructions that the AI assistant interprets as commands.
+- A document or schema file read by `validate_asm_schema` contains embedded instructions that the AI assistant interprets as commands.
 - A JSON document fetched from `purl.allotrope.org` by `fetch_asm_document` contains text that causes the assistant to invoke further tool calls with attacker-controlled arguments.
 - An AI agent loop passes the output of one tool call as the input path or URI of the next without human review.
 

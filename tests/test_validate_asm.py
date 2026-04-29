@@ -1,13 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-"""Unit tests for MCP server registration and the validate_asm tool."""
+"""Unit tests for MCP server registration and the validate_asm_schema tool."""
 
 import json
 import os
 from allotrope_mcp_server.server import (
     mcp,
-    validate_asm,
+    validate_asm_schema,
     validate_asm_document,
 )
 from mcp.server.fastmcp import FastMCP
@@ -31,9 +31,9 @@ class TestMcpServer:
         assert mcp.name == 'allotrope-mcp-server'
 
     def test_validate_asm_tool_registered(self):
-        """Test that validate_asm tool is registered."""
+        """Test that validate_asm_schema tool is registered."""
         tools = mcp._tool_manager._tools
-        assert 'validate_asm' in tools
+        assert 'validate_asm_schema' in tools
 
 
 class TestValidateAsmDocument:
@@ -145,28 +145,28 @@ class TestValidateAsmDocumentPathTraversal:
         assert result.error_message is None or 'not found' not in (result.error_message or '')
 
 
-class TestValidateAsmTool:
-    """Tests for the validate_asm MCP tool wrapper."""
+class TestValidateAsmSchemaTool:
+    """Tests for the validate_asm_schema MCP tool wrapper."""
 
     def test_valid_document_returns_json(self):
-        """Test that validate_asm returns valid JSON for a valid document."""
-        result_json = validate_asm(VALID_DOC, SCHEMA)
+        """Test that validate_asm_schema returns valid JSON for a valid document."""
+        result_json = validate_asm_schema(VALID_DOC, SCHEMA)
         result = json.loads(result_json)
         assert result['is_valid'] is True
         assert result['errors'] == []
         assert 'error_message' not in result
 
     def test_invalid_document_returns_json(self):
-        """Test that validate_asm returns valid JSON for an invalid document."""
-        result_json = validate_asm(INVALID_DOC, SCHEMA)
+        """Test that validate_asm_schema returns valid JSON for an invalid document."""
+        result_json = validate_asm_schema(INVALID_DOC, SCHEMA)
         result = json.loads(result_json)
         assert result['is_valid'] is False
         assert len(result['errors']) > 0
 
     def test_missing_file_returns_json_with_error_message(self, tmp_path):
-        """Test that validate_asm returns JSON with error_message for missing files."""
+        """Test that validate_asm_schema returns JSON with error_message for missing files."""
         missing = str(tmp_path / 'nonexistent.json')
-        result_json = validate_asm(missing, SCHEMA)
+        result_json = validate_asm_schema(missing, SCHEMA)
         result = json.loads(result_json)
         assert result['is_valid'] is False
         assert 'error_message' in result

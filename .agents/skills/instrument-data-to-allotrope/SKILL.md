@@ -115,7 +115,7 @@ Constraints:
 
 ### Step 7: Validate Against the Schema
 
-Call `validate_asm` with the generated JSON and the schema path from Step 2.
+Call `validate_asm_schema` with the generated JSON and the schema path from Step 2.
 
 Constraints:
 
@@ -139,7 +139,7 @@ Expected outcome:
 - Schema downloaded to `tests/testdata/json-schemas/...plate-reader.embed.schema`
 - Converter script written to `convert_plate_reader_csv.py`
 - Output JSON contains 16 measurement documents (4 columns × 4 rows)
-- `validate_asm` returns `{"is_valid": true, "errors": []}`
+- `validate_asm_schema` returns `{"is_valid": true, "errors": []}`
 
 ## Troubleshooting
 
@@ -158,4 +158,4 @@ the unit field will cause a validation failure.
 **`fetch_asm_document` saves to a nested path**
 The tool mirrors the URI path under `output_dir`, which can produce a double-nested directory
 (e.g. `json-schemas/json-schemas/...`). Record the exact path returned by the tool and use
-that path verbatim in the `validate_asm` call.
+that path verbatim in the `validate_asm_schema` call.
