@@ -226,7 +226,7 @@ Instrument metadata that doesn't fit standard ASM fields (lot numbers, flow time
 
 ## 6. Local testing
 
-Include a `__main__` block in the converter file to support local testing. This should accept a single input argument (the raw instrument file path), parse it, call the `convert` function, and then write the `asm_output` dict to a json file. The json file should have the same basename as the raw data file, plus a `_asm` suffix.
+Include a `__main__` block in the converter file to support local testing. This should accept a single input argument (the raw instrument file path), parse it, call the `convert` function, and then write the `asm_output` and `field_mapping` dicts to json files. The json files should have the same basename as the raw data file, plus a `_asm` suffix for the asm output or a `_map` suffix for the field mapping data.
 
 ```python
 import csv
@@ -246,6 +246,8 @@ if __name__ == '__main__':
         result = convert(f.read())
     with open('sample_data_asm.json', 'w') as f:
         json.dump(result.get('asm_output'), f, indent=2)
+    with open('sample_data_map.json', 'w') as f:
+        json.dump(result.get('field_mapping'), f, indent=2)        
 ```
 
 The `__main__` block lets you test locally with file I/O, but the service never executes it. The security checks (no `open()`, no `Path()`) apply to the `convert` function and top-level code — not to the `__main__` block.
@@ -371,4 +373,6 @@ if __name__ == '__main__':
         result = convert(f.read())
     with open('plate_reader_data_asm.json', 'w') as f:
         json.dump(result.get('asm_output'), f, indent=2)
+    with open('plate_reader_data_map.json', 'w') as f:
+        json.dump(result.get('field_mapping'), f, indent=2)        
 ```

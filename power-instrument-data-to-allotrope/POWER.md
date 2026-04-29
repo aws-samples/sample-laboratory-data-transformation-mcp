@@ -2,7 +2,7 @@
 name: "instrument-data-to-allotrope"
 displayName: "Instrument Data to Allotrope"
 description: "Create data converter code to transform laboratory instrument data into Allotrope Simple Model (ASM) format."
-keywords: ["allotrope", "asm"]
+keywords: ["allotrope", "asm", "ASM"]
 ---
 
 # Convert Instrument Data to ASM Data Instance
