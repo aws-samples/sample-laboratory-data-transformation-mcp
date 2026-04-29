@@ -109,6 +109,7 @@ Constraints:
 
 - MUST verify the script exits with code 0
 - MUST confirm the output file exists and contains well-formed JSON before proceeding
+- MUST confirm the `_map.json` field mapping file is also produced alongside the `_asm.json` file (per `CUSTOM-CONVERTER-REQUIREMENTS.md` section 6)
 
 ### Step 7: Validate Against the Schema
 
@@ -120,6 +121,17 @@ Constraints:
 - MUST pass the schema path from Step 2 as `asm_schema_path`
 - MUST confirm `is_valid` is `true` and `errors` is empty before considering the task complete
 - If validation fails, MUST inspect each error, correct the converter, re-run, and re-validate until valid
+
+### Step 8: Validate the Field Mapping
+
+Call `validate_field_map` with the `_map.json` file produced in Step 6.
+
+Constraints:
+
+- MUST pass the `_map.json` file path as `field_map_path`
+- MUST review the `mismatches` array in the result; each entry identifies a field whose source and ASM values diverge
+- MUST treat a non-empty `mismatches` list as a signal to update the converter script, EXCEPT for intentional divergences such as timestamp normalisation (ISO 8601 conversion) and device identifier extraction, which are documented as acceptable in `CUSTOM-CONVERTER-REQUIREMENTS.md` section 5.5
+- SHOULD re-run Steps 6 through 8 after any converter update until all unintentional mismatches are resolved
 
 ## Examples
 
@@ -137,6 +149,7 @@ Expected outcome:
 - Converter script written to `convert_plate_reader_csv.py`
 - Output JSON contains 16 measurement documents (4 columns × 4 rows)
 - `validate_asm_schema` returns `{"is_valid": true, "errors": []}`
+- `validate_field_map` reports only the expected intentional mismatches (Instrument serial-number extraction + Recorded timestamp normalisation)
 
 ## Troubleshooting
 

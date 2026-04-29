@@ -40,7 +40,7 @@ def test_mirror_path_derivation_matches_expected(path_suffix: str, output_dir: s
     uri = PURL_ORIGIN + path_suffix
 
     # Replicate the derivation logic from fetch_asm_document.
-    mirror_path = uri[len(PURL_ORIGIN):].lstrip('/')
+    mirror_path = uri[len(PURL_ORIGIN) :].lstrip('/')
     derived = Path(output_dir) / mirror_path
 
     # Expected: same formula expressed independently.
@@ -57,6 +57,7 @@ class TestFetchAsmDocumentHttpErrors:
     async def test_http_error_returns_error_with_uri_and_status(self, mocker, tmp_path):
         """HTTPError returns {'error': ...} containing URI and status code."""
         import urllib.error
+
         mocker.patch(
             'urllib.request.urlopen',
             side_effect=urllib.error.HTTPError(self.VALID_URI, 404, 'Not Found', {}, None),
@@ -69,6 +70,7 @@ class TestFetchAsmDocumentHttpErrors:
     async def test_url_error_returns_error_with_uri_and_reason(self, mocker, tmp_path):
         """URLError returns {'error': ...} containing URI and reason."""
         import urllib.error
+
         mocker.patch(
             'urllib.request.urlopen',
             side_effect=urllib.error.URLError('connection refused'),

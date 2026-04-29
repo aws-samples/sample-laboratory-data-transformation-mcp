@@ -14,6 +14,7 @@ This MCP server provides the following tools:
 - **fetch_asm_document**: Download a raw ASM JSON document from `purl.allotrope.org` to the local filesystem at a path mirroring the URI structure
 - **list_asms**: List all available Allotrope Simple Models (ASMs) with their descriptions from a bundled reference file
 - **validate_asm_schema**: Validate ASM JSON documents against their corresponding JSON schemas to verify data compliance
+- **validate_field_map**: Validate a field mapping file produced by a custom converter script, comparing source values against ASM values to confirm data integrity
 
 ## Installation
 
@@ -222,6 +223,50 @@ Validates an ASM JSON document against its corresponding JSON schema.
 |-----------|------|----------|-------------|
 | `asm_document_path` | string | Yes | Path to the ASM JSON document to validate |
 | `asm_schema_path` | string | Yes | Path to the ASM JSON schema to validate against |
+
+### validate_field_map
+
+Validates a field mapping file produced by a custom converter script. Reads the JSON file and compares each entry's `source_value` against its `asm_value` using string equality (primary) and numeric float equality (fallback). Returns a structured result with match counts, mismatches, and a summary message.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `field_map_path` | string | Yes | Path to the field mapping JSON file (the `_map.json` produced by the converter) |
+
+**Returns:** A JSON object with `matched`, `total`, `mismatches`, and `message` keys on success, or an `error` key on failure.
+
+**Example response (all match):**
+
+```json
+{
+  "matched": 19,
+  "total": 19,
+  "mismatches": [],
+  "message": "The conversion script accurately reproduced all 19 field(s) from the raw data file."
+}
+```
+
+**Example response (with mismatches):**
+
+```json
+{
+  "matched": 17,
+  "total": 19,
+  "mismatches": [
+    {
+      "source_field": "Recorded",
+      "source_value": "2023-10-26:11:15:40",
+      "asm_field": "measurement time",
+      "asm_value": "2023-10-26T11:15:40+00:00",
+      "unit": ""
+    }
+  ],
+  "message": "The conversion script needs to be updated to address 2 mismatched field(s)."
+}
+```
+
+> **Note:** Entries where `asm_value` is an ISO 8601 normalised form of `source_value` (e.g. timestamp conversion) will appear as mismatches. This is intentional — the tool surfaces all value divergences so the developer or AI agent can review whether they are acceptable.
 
 ## Security Considerations
 

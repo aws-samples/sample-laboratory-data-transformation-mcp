@@ -99,6 +99,7 @@ class TestValidateAsmDocument:
     def test_document_exceeds_size_limit(self, tmp_path):
         """Test that a document exceeding the size limit returns an error."""
         from allotrope_mcp_server.server import MAX_FILE_SIZE_BYTES
+
         big_file = tmp_path / 'big_doc.json'
         # Write a file just over the limit (content doesn't need to be valid JSON).
         big_file.write_bytes(b'x' * (MAX_FILE_SIZE_BYTES + 1))
@@ -110,6 +111,7 @@ class TestValidateAsmDocument:
     def test_schema_exceeds_size_limit(self, tmp_path):
         """Test that a schema exceeding the size limit returns an error."""
         from allotrope_mcp_server.server import MAX_FILE_SIZE_BYTES
+
         big_file = tmp_path / 'big_schema.json'
         big_file.write_bytes(b'x' * (MAX_FILE_SIZE_BYTES + 1))
         result = validate_asm_document(VALID_DOC, str(big_file))
