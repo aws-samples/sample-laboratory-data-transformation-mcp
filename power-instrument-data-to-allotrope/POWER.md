@@ -5,7 +5,6 @@ description: "Create data converter code to transform laboratory instrument data
 keywords: ["allotrope", "asm"]
 ---
 
-
 # Convert Instrument Data to ASM Data Instance
 
 Converts raw laboratory instrument data into a valid Allotrope Simple Model (ASM) JSON data
@@ -91,6 +90,8 @@ Constraints:
 ### Step 5: Write the Converter Script
 
 Implement a Python script that reads the source data and writes a conformant ASM JSON file.
+
+Refer to → `CUSTOM-CONVERTER-REQUIREMENTS.md` for additional requirements about custom converter files.
 
 Constraints:
 

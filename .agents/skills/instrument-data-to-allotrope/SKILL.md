@@ -94,6 +94,8 @@ Constraints:
 
 Implement a Python script that reads the source data and writes a conformant ASM JSON file.
 
+Refer to → `CUSTOM-CONVERTER-REQUIREMENTS.md` for additional requirements about custom converter files.
+
 Constraints:
 
 - MUST generate a fresh UUID for `ASM file identifier` on each run
